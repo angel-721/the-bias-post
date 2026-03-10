@@ -1,111 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useArticleStore } from "@/store/useArticleStore";
+import { ArticleEditor } from "@/components/ArticleEditor";
+import { FormattedArticle } from "@/components/FormattedArticle";
+import { BiasAnalysisPanel } from "@/components/BiasAnalysisPanel";
+import { SignalPhraseModal } from "@/components/SignalPhraseModal";
+import { SingleColumnLayout } from "@/components/SingleColumnLayout";
+import { TwoColumnLayout } from "@/components/TwoColumnLayout";
+import { Document } from "@carbon/icons-react";
+import { LOADING_FACTS } from "@/lib/loadingFacts";
 
 export default function Home() {
-  const [articleText, setArticleText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<object | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const step = useArticleStore((s) => s.step);
+  const { result, isAnalyzing, error } = useArticleStore();
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
-  const getWordCount = (text: string): number => {
-    const trimmed = text.trim();
-    if (!trimmed) return 0;
-    return trimmed.split(/\s+/).length;
-  };
-
-  const wordCount = getWordCount(articleText);
-  const isValidInput = wordCount >= 100;
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setArticleText(e.target.value);
-    setError(null);
-  };
-
-  const handleAnalyze = async () => {
-    if (!isValidInput) {
-      setError(`Article must be at least 100 words. Current: ${wordCount} words.`);
+  // Rotate through loading facts during loading
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setCurrentFactIndex(0);
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    const interval = setInterval(() => {
+      setCurrentFactIndex((prev) => (prev + 1) % LOADING_FACTS.length);
+    }, 4000);
 
-    try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: articleText }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Analysis failed");
-      }
-
-      const data = await response.json();
-      setResult(data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6">News Article Analyzer</h1>
-
-      {/* Input Section */}
-      <div className="mb-4">
-        <textarea
-          value={articleText}
-          onChange={handleInputChange}
-          placeholder="Enter your article here..."
-          rows={12}
-          className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      {/* Word Counter and Validation */}
-      <div className="mb-4">
-        <p className={`text-sm ${isValidInput ? "text-green-600" : "text-orange-600"}`}>
-          Word count: {wordCount}/100
-        </p>
-        {!isValidInput && articleText.trim() && (
-          <p className="text-sm text-red-600 mt-1">
-            Article must be at least 100 words. Current: {wordCount} words.
-          </p>
-        )}
-      </div>
-
-      {/* Analyze Button */}
-      <button
-        onClick={handleAnalyze}
-        disabled={!isValidInput || isLoading}
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+    <div className="min-h-screen bg-bg-primary text-text-primary">
+      {/* Main Content */}
+      <main
+        className={
+          step === "results"
+            ? "max-w-7xl mx-auto px-6 py-12"
+            : "max-w-3xl mx-auto px-6 py-12"
+        }
       >
-        {isLoading ? "Analyzing..." : "Analyze Article"}
-      </button>
+        {/* Step 1: Input - ArticleEditor */}
+        {step === "input" && (
+          <SingleColumnLayout>
+            <ArticleEditor />
+          </SingleColumnLayout>
+        )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="mt-6 bg-red-100 text-red-700 p-4 rounded-lg border border-red-300">
-          <p className="font-semibold">Error</p>
-          <p>{error}</p>
-        </div>
-      )}
+        {/* Step 2: Formatted - Single Column */}
+        {step === "formatted" && !result && (
+          <SingleColumnLayout>
+            <FormattedArticle />
+          </SingleColumnLayout>
+        )}
 
-      {/* Results Display */}
-      {result && (
-        <div className="mt-6 bg-gray-100 p-4 rounded-lg border border-gray-300">
-          <h2 className="text-xl font-semibold mb-3">Analysis Results</h2>
-          <pre className="text-sm overflow-auto max-h-96">
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
-      )}
+        {/* Step 3: Results - Two Column Layout */}
+        {step === "results" && (
+          <>
+            {/* Loading State */}
+            {isAnalyzing && (
+              <div className="text-center py-16">
+                <div className="flex justify-center mb-6">
+                  <Document size={64} className="text-accent animate-pulse" />
+                </div>
+                <h3 className="font-display text-2xl font-bold mb-4">
+                  Analyzing Your Article...
+                </h3>
+                <p className="text-text-secondary italic max-w-md mx-auto">
+                  {LOADING_FACTS[currentFactIndex]}
+                </p>
+              </div>
+            )}
+
+            {/* Error Display */}
+            {error && !isAnalyzing && (
+              <div className="bg-bg-surface border-l-4 border-danger p-6">
+                <p className="font-semibold text-danger mb-2">
+                  Analysis Error
+                </p>
+                <p className="text-text-secondary">{error}</p>
+                <button
+                  onClick={() => useArticleStore.getState().editArticle()}
+                  className="mt-4 text-accent hover:underline"
+                >
+                  Start Over
+                </button>
+              </div>
+            )}
+
+            {/* Two-Column Layout with Results */}
+            {result && !isAnalyzing && !error && (
+              <TwoColumnLayout
+                left={<FormattedArticle />}
+                right={<BiasAnalysisPanel />}
+              />
+            )}
+          </>
+        )}
+      </main>
+
+      {/* Signal Phrase Detail Modal */}
+      <SignalPhraseModal />
     </div>
   );
 }
