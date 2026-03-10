@@ -55,3 +55,11 @@ export type LibraryArticle = {
   ai_summary: string | null;
   ai_summary_generated: boolean;
 };
+
+export type SharedPhrase = {
+  phrase: string;
+  inA: boolean;
+  inB: boolean;
+};
+
+export type ComparisonStep = 'selection' | 'comparison';

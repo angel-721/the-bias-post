@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { AnalysisResult, ArticleState, Step, SignalPhraseMatch, LibraryArticle } from '@/types';
+import type { AnalysisResult, ArticleState, Step, SignalPhraseMatch, LibraryArticle, SharedPhrase, ComparisonStep } from '@/types';
 
 interface ArticleStore {
   // Article metadata
@@ -44,6 +44,15 @@ interface ArticleStore {
   libraryLoaded: boolean;
   libraryError: string | null;
 
+  // Comparison state
+  comparisonStep: ComparisonStep;
+  comparisonArticleA: LibraryArticle | null;
+  comparisonArticleB: LibraryArticle | null;
+  comparisonResult: string | null;
+  comparisonLoading: boolean;
+  comparisonCached: boolean;
+  comparisonError: string | null;
+
   // Actions
   setField: (field: keyof ArticleState | 'theme' | 'sourceName' | 'sourceUrl' | 'imageUrl', value: string) => void;
   setStep: (step: Step) => void;
@@ -86,6 +95,16 @@ interface ArticleStore {
   setLibraryLoaded: (loaded: boolean) => void;
   setLibraryError: (error: string | null) => void;
   fetchLibrary: () => Promise<void>;
+
+  // Comparison actions
+  setComparisonStep: (step: ComparisonStep) => void;
+  setComparisonArticle: (slot: 'A' | 'B', article: LibraryArticle | null) => void;
+  setComparisonResult: (text: string | null) => void;
+  setComparisonLoading: (loading: boolean) => void;
+  setComparisonCached: (cached: boolean) => void;
+  setComparisonError: (error: string | null) => void;
+  generateComparison: () => Promise<void>;
+  clearComparison: () => void;
 }
 
 export const useArticleStore = create<ArticleStore>((set, get) => ({
@@ -130,6 +149,15 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
   libraryArticles: [],
   libraryLoaded: false,
   libraryError: null,
+
+  // Comparison state
+  comparisonStep: 'selection',
+  comparisonArticleA: null,
+  comparisonArticleB: null,
+  comparisonResult: null,
+  comparisonLoading: false,
+  comparisonCached: false,
+  comparisonError: null,
 
   // Actions
   setField: (field, value) => {
@@ -413,6 +441,99 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
     }
   },
 
+  // Comparison actions
+  setComparisonStep: (step) => set({ comparisonStep: step }),
+
+  setComparisonArticle: (slot, article) => {
+    if (slot === 'A') {
+      set({ comparisonArticleA: article });
+    } else {
+      set({ comparisonArticleB: article });
+    }
+  },
+
+  setComparisonResult: (text) => set({ comparisonResult: text }),
+  setComparisonLoading: (loading) => set({ comparisonLoading: loading }),
+  setComparisonCached: (cached) => set({ comparisonCached: cached }),
+  setComparisonError: (error) => set({ comparisonError: error }),
+
+  generateComparison: async () => {
+    const state = get();
+    const { comparisonArticleA, comparisonArticleB } = state;
+
+    if (!comparisonArticleA || !comparisonArticleB) {
+      set({ comparisonError: 'Please select two articles to compare' });
+      return;
+    }
+
+    set({ comparisonLoading: true, comparisonError: null, comparisonResult: null, comparisonCached: false });
+
+    try {
+      const response = await fetch('/api/compare/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          articleAId: comparisonArticleA.id,
+          articleBId: comparisonArticleB.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate comparison');
+      }
+
+      const contentType = response.headers.get('content-type');
+
+      // Handle JSON response (cached comparison)
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        set({
+          comparisonResult: data.comparison,
+          comparisonCached: data.cached || false,
+          comparisonError: null,
+        });
+      } else {
+        // Handle streaming response (new comparison)
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let result = '';
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            result += chunk;
+            set({ comparisonResult: result }); // Update incrementally
+          }
+        }
+
+        set({
+          comparisonResult: result,
+          comparisonCached: false,
+          comparisonError: null,
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate comparison';
+      set({ comparisonError: errorMessage });
+    } finally {
+      set({ comparisonLoading: false });
+    }
+  },
+
+  clearComparison: () => set({
+    comparisonStep: 'selection',
+    comparisonArticleA: null,
+    comparisonArticleB: null,
+    comparisonResult: null,
+    comparisonLoading: false,
+    comparisonCached: false,
+    comparisonError: null,
+  }),
+
   reset: () => {
     set({
       headline: '',
@@ -439,6 +560,13 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
       libraryArticles: get().libraryArticles, // Keep library across resets
       libraryLoaded: get().libraryLoaded,
       libraryError: get().libraryError,
+      comparisonStep: 'selection',
+      comparisonArticleA: null,
+      comparisonArticleB: null,
+      comparisonResult: null,
+      comparisonLoading: false,
+      comparisonCached: false,
+      comparisonError: null,
     });
   },
 }));

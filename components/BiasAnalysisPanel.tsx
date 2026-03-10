@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useArticleStore } from "@/store/useArticleStore";
 import { getConfidenceMessage } from "@/lib/matchSignalPhrases";
 import Link from "next/link";
+import { LikelihoodBar } from "@/components/LikelihoodBar";
 
 export function BiasAnalysisPanel() {
   const {
@@ -98,38 +99,12 @@ export function BiasAnalysisPanel() {
             {/* Confidence Bar */}
             {result.confidence.Likely !== undefined &&
               result.confidence.Unlikely !== undefined && (
-              <>
-                <div className="flex justify-between text-sm text-text-secondary">
-                  <span>Unlikely</span>
-                  <span>Likely</span>
-                </div>
-                <div className="weight-bar-container">
-                  <div
-                    className="weight-bar-fill"
-                    style={{
-                      width: `${(result.confidence.Likely || 0) * 100}%`,
-                    }}
-                  />
-                </div>
-                <div className="text-center">
-                  <span className="text-4xl font-bold text-accent">
-                    {Math.round((result.confidence.Likely || 0) * 100)}%
-                  </span>
-                  <p className="text-sm text-text-secondary mt-1">
-                    {Math.round((result.confidence.Likely || 0) * 100) >= 50
-                      ? "Likely"
-                      : "Unlikely"}{" "}
-                    Biased
-                  </p>
-                </div>
-              </>
+              <LikelihoodBar likelihood={biasLikelihood} />
             )}
 
             {/* Confidence Message */}
             <p className="text-base leading-relaxed text-text-primary font-serif">
-              {getConfidenceMessage(
-                Math.round((result.confidence.Likely || 0) * 100)
-              )}
+              {getConfidenceMessage(biasLikelihood)}
             </p>
           </div>
         )}

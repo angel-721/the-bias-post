@@ -17,6 +17,7 @@ export function NavBar() {
   const navLinks = [
     { href: "/", label: "Feed" },
     { href: "/analyze", label: "Analyze" },
+    { href: "/compare", label: "Compare" },
     { href: "/blog", label: "Blog" },
   ];
 
