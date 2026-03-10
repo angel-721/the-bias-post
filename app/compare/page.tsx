@@ -1,14 +1,14 @@
 "use client";
 
 import { useArticleStore } from "@/store/useArticleStore";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { ArticleSelector } from "@/components/ArticleSelector";
 import { ComparisonView } from "@/components/ComparisonView";
 import { ComparisonCard } from "@/components/ComparisonCard";
 import { ArrowRight, Add } from "@carbon/icons-react";
 import { useSearchParams } from "next/navigation";
 
-export default function ComparePage() {
+function ComparePageContent() {
   const searchParams = useSearchParams();
   const comparisonId = searchParams.get("id");
 
@@ -261,5 +261,20 @@ export default function ComparePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ComparePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-4"></div>
+          <p className="text-text-secondary">Loading comparison...</p>
+        </div>
+      </div>
+    }>
+      <ComparePageContent />
+    </Suspense>
   );
 }
