@@ -177,7 +177,7 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
 
   setResult: (result) => {
     set({ result, step: 'results', isAnalyzing: false });
-    // Auto-generate AI summary after analysis completes
+    // Auto-generate AI summary after analysis completes (for both high and low bias articles)
     setTimeout(() => {
       get().generateSummary();
     }, 100);
@@ -226,18 +226,19 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
   setSummaryError: (error) => set({ summaryError: error }),
   generateSummary: async () => {
     const state = get();
-    const { result, matchedPhrases } = state;
+    const { result, matchedPhrases, body, headline } = state;
 
     if (!result || !result.signal_phrases || result.signal_phrases.length === 0) {
       set({ summaryError: 'No analysis results to summarize' });
       return;
     }
 
+    const likelihood = Math.round((result.confidence.Likely || 0) * 100);
+    const isLowBias = likelihood < 30;
+
     set({ isSummarizing: true, summaryError: null });
 
     try {
-      const likelihood = Math.round((result.confidence.Likely || 0) * 100);
-
       // Prepare signal phrases with context
       const signalPhrasesWithDetails = result.signal_phrases.map((sp, index) => {
         const match = matchedPhrases[index];
@@ -248,12 +249,23 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
         };
       });
 
+      // Extract lede (first 3 sentences) for low bias articles
+      const getArticleLede = (text: string): string => {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        return sentences.slice(0, 3).join('. ') + (sentences.length > 3 ? '.' : '');
+      };
+
+      const articleLede = isLowBias ? getArticleLede(body) : null;
+
       const response = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           signal_phrases: signalPhrasesWithDetails,
           likelihood,
+          headline: headline || null,
+          article_lede: articleLede,
+          is_low_bias: isLowBias,
         }),
       });
 
@@ -288,7 +300,7 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
       aiSummary,
     } = state;
 
-    // Validate AI summary exists
+    // Validate AI summary exists (required for all articles now)
     if (!aiSummary) {
       set({ saveError: 'AI summary must be generated before saving' });
       return;
@@ -327,7 +339,7 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
           likelihood: Math.round((result.confidence.Likely || 0) * 100),
           weightStd: result.weight_std,
           signalPhrases: signalPhrasesWithDetails,
-          aiSummary: aiSummary.trim(),
+          aiSummary: aiSummary ? aiSummary.trim() : null, // Allow null for low bias articles
         }),
       });
 

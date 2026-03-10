@@ -7,7 +7,7 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { signal_phrases, likelihood } = await request.json();
+    const { signal_phrases, likelihood, headline, article_lede, is_low_bias } = await request.json();
 
     if (!signal_phrases || !Array.isArray(signal_phrases) || signal_phrases.length === 0) {
       return NextResponse.json(
@@ -23,18 +23,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[API] Generating AI summary for', signal_phrases.length, 'signal phrases');
+    console.log('[API] Generating AI summary for', signal_phrases.length, 'signal phrases', is_low_bias ? '(low bias analysis)' : '(high bias analysis)');
 
-    // Build the prompt
-    const phrasesText = signal_phrases
-      .map((sp, i) => `${i + 1}. "${sp.phrase}" (weight: ${sp.weight.toFixed(4)})`)
-      .join('\n');
+    let userPrompt: string;
 
-    const userPrompt = `A bias classifier analyzed a news article and flagged these phrases as the top indicators of bias (confidence: ${likelihood}% likely biased):
+    if (is_low_bias) {
+      // Low bias prompt: explain why the article scored low
+      const phrasesText = signal_phrases
+        .map((sp, i) => `${i + 1}. "${sp.phrase}" (weight: ${sp.weight.toFixed(4)})`)
+        .join('\n');
+
+      userPrompt = `A bias classifier analyzed a news article and determined it has a LOW bias likelihood of ${likelihood}%.
+
+Article headline: ${headline || 'N/A'}
+
+Article lede (first 3 sentences):
+"${article_lede || 'N/A'}"
+
+Key signal phrases the classifier examined (even if not found in text):
+${phrasesText}
+
+In 2-3 sentences, explain why this article likely scored low on bias. Focus on what makes the language appear neutral (e.g., balanced sourcing, absence of loaded language, factual presentation, lack of emotional manipulation). Reference specific patterns in the lede if relevant.`;
+    } else {
+      // High bias prompt: analyze bias indicators
+      const phrasesText = signal_phrases
+        .map((sp, i) => `${i + 1}. "${sp.phrase}" (weight: ${sp.weight.toFixed(4)})`)
+        .join('\n');
+
+      userPrompt = `A bias classifier analyzed a news article and flagged these phrases as the top indicators of bias (confidence: ${likelihood}% likely biased):
 
 ${phrasesText}
 
 In 2-3 sentences, give an objective summary of what these phrases collectively suggest about the article's framing or perspective. Be specific about what viewpoint or agenda the language may favor or oppose. Do not use absolute language.`;
+    }
 
     console.log('[API] Calling OpenAI API...');
 
@@ -43,7 +64,7 @@ In 2-3 sentences, give an objective summary of what these phrases collectively s
       messages: [
         {
           role: 'system',
-          content: 'You are an objective media analyst. You provide neutral, balanced summaries of bias indicators in news articles. Avoid making definitive judgments - focus on describing patterns and tendencies.'
+          content: 'You are an objective media analyst. You provide neutral, balanced summaries of bias indicators in news articles. For low-bias articles, you explain what makes the writing appear neutral. For high-bias articles, you describe patterns and tendencies in biased language.'
         },
         {
           role: 'user',

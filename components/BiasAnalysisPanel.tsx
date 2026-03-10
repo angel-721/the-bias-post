@@ -22,6 +22,14 @@ export function BiasAnalysisPanel() {
   } = useArticleStore();
   const [signalPhrasesOpen, setSignalPhrasesOpen] = useState(true);
 
+  // Calculate bias likelihood
+  const biasLikelihood = result?.confidence?.Likely
+    ? Math.round(result.confidence.Likely * 100)
+    : 0;
+
+  // Check if this is a low bias article (< 30%)
+  const isLowBias = biasLikelihood < 30;
+
   const handleExport = () => {
     const store = useArticleStore.getState();
     const { headline, author, body, result, matchedPhrases, aiSummary } = store;
@@ -127,14 +135,14 @@ export function BiasAnalysisPanel() {
         )}
       </div>
 
-      {/* AI Summary Section */}
+      {/* AI Summary Section - Show for all articles */}
       <div className="analysis-section">
-        <h3 className="analysis-section-title">AI SUMMARY</h3>
+        <h3 className="analysis-section-title">{isLowBias ? 'AI ANALYSIS' : 'AI SUMMARY'}</h3>
 
         {isSummarizing ? (
           <div className="text-center py-4">
             <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
-            <p className="text-sm text-text-secondary mt-2">Generating summary...</p>
+            <p className="text-sm text-text-secondary mt-2">Generating analysis...</p>
           </div>
         ) : aiSummary ? (
           <div className="space-y-2">
@@ -146,7 +154,7 @@ export function BiasAnalysisPanel() {
         ) : null}
       </div>
 
-      {/* Save Section - Only show when summary is ready */}
+      {/* Save Section - Show when summary is ready */}
       {aiSummary && !lastSavedArticleId && (
         <div className="analysis-section">
           <button
@@ -164,14 +172,14 @@ export function BiasAnalysisPanel() {
       {lastSavedArticleId && (
         <div className="analysis-section">
           <p className="text-sm text-success mb-2">✓ Saved to library</p>
-          <Link href="/feed" className="text-sm text-accent hover:underline">
+          <Link href="/" className="text-sm text-accent hover:underline">
             View in Library →
           </Link>
         </div>
       )}
 
-      {/* Signal Phrases Section */}
-      {result.signal_phrases && result.signal_phrases.length > 0 && (
+      {/* Signal Phrases Section - Only show for articles with bias likelihood >= 30% */}
+      {!isLowBias && result.signal_phrases && result.signal_phrases.length > 0 && (
         <div className="analysis-section">
           <button
             onClick={() => setSignalPhrasesOpen(!signalPhrasesOpen)}

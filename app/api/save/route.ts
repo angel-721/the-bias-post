@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // aiSummary is required for all articles
     if (!body.aiSummary || typeof body.aiSummary !== 'string') {
       return NextResponse.json(
         { error: 'aiSummary is required' },

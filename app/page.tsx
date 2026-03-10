@@ -1,106 +1,137 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { LibraryArticleCard } from "@/components/LibraryArticleCard";
 import { useArticleStore } from "@/store/useArticleStore";
-import { ArticleEditor } from "@/components/ArticleEditor";
-import { FormattedArticle } from "@/components/FormattedArticle";
-import { BiasAnalysisPanel } from "@/components/BiasAnalysisPanel";
-import { SignalPhraseModal } from "@/components/SignalPhraseModal";
-import { SingleColumnLayout } from "@/components/SingleColumnLayout";
-import { TwoColumnLayout } from "@/components/TwoColumnLayout";
+import { useEffect, useState } from "react";
 import { Document } from "@carbon/icons-react";
-import { LOADING_FACTS } from "@/lib/loadingFacts";
 
-export default function Home() {
-  const step = useArticleStore((s) => s.step);
-  const { result, isAnalyzing, error } = useArticleStore();
-  const [currentFactIndex, setCurrentFactIndex] = useState(0);
+type SortOption = 'newest' | 'highest_bias' | 'lowest_bias';
 
-  // Rotate through loading facts during loading
+export default function FeedPage() {
+  const {
+    libraryArticles,
+    libraryLoaded,
+    libraryError,
+    fetchLibrary,
+  } = useArticleStore();
+
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [sortedArticles, setSortedArticles] = useState(libraryArticles);
+
   useEffect(() => {
-    if (!isAnalyzing) {
-      setCurrentFactIndex(0);
-      return;
+    fetchLibrary();
+  }, [fetchLibrary]);
+
+  useEffect(() => {
+    let sorted = [...libraryArticles];
+
+    switch (sortBy) {
+      case 'highest_bias':
+        sorted.sort((a, b) => b.likelihood - a.likelihood);
+        break;
+      case 'lowest_bias':
+        sorted.sort((a, b) => a.likelihood - b.likelihood);
+        break;
+      case 'newest':
+      default:
+        sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
     }
 
-    const interval = setInterval(() => {
-      setCurrentFactIndex((prev) => (prev + 1) % LOADING_FACTS.length);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [isAnalyzing]);
+    setSortedArticles(sorted);
+  }, [libraryArticles, sortBy]);
 
   return (
-    <div className="min-h-screen bg-bg-primary text-text-primary">
-      {/* Main Content */}
-      <main
-        className={
-          step === "results"
-            ? "max-w-7xl mx-auto px-6 py-12"
-            : "max-w-3xl mx-auto px-6 py-12"
-        }
-      >
-        {/* Step 1: Input - ArticleEditor */}
-        {step === "input" && (
-          <SingleColumnLayout>
-            <ArticleEditor />
-          </SingleColumnLayout>
+    <>
+      <main className="max-w-6xl mx-auto px-6 py-12">
+        {/* Section header */}
+        <div className="text-center mb-8">
+          <h1 className="font-display text-5xl font-black tracking-tight mb-4">
+            ARTICLE LIBRARY
+          </h1>
+          <div className="w-32 h-0.5 bg-accent mx-auto mb-6"></div>
+        </div>
+
+        {/* Explanation copy */}
+        <div className="max-w-2xl mx-auto text-center mb-6">
+          <p className="text-text-secondary leading-relaxed">
+            A collection of articles analyzed for potential bias using The Bias Post classifier.
+            Each entry includes AI-generated summaries and key signal phrases.
+          </p>
+        </div>
+
+        {/* Sort controls */}
+        {libraryLoaded && libraryArticles.length > 0 && (
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-1 text-xs text-text-secondary">
+              <span className="mr-2">Sort:</span>
+              <button
+                onClick={() => setSortBy('newest')}
+                className={`px-3 py-1 rounded transition-colors ${
+                  sortBy === 'newest'
+                    ? 'text-accent font-medium'
+                    : 'hover:text-text-primary'
+                }`}
+              >
+                Newest
+              </button>
+              <span className="text-text-secondary opacity-50">·</span>
+              <button
+                onClick={() => setSortBy('highest_bias')}
+                className={`px-3 py-1 rounded transition-colors ${
+                  sortBy === 'highest_bias'
+                    ? 'text-accent font-medium'
+                    : 'hover:text-text-primary'
+                }`}
+              >
+                Highest Bias
+              </button>
+              <span className="text-text-secondary opacity-50">·</span>
+              <button
+                onClick={() => setSortBy('lowest_bias')}
+                className={`px-3 py-1 rounded transition-colors ${
+                  sortBy === 'lowest_bias'
+                    ? 'text-accent font-medium'
+                    : 'hover:text-text-primary'
+                }`}
+              >
+                Lowest Bias
+              </button>
+            </div>
+          </div>
         )}
 
-        {/* Step 2: Formatted - Single Column */}
-        {step === "formatted" && !result && (
-          <SingleColumnLayout>
-            <FormattedArticle />
-          </SingleColumnLayout>
-        )}
+        {/* Thin rule */}
+        <div className="border-b border-border-color mb-8"></div>
 
-        {/* Step 3: Results - Two Column Layout */}
-        {step === "results" && (
-          <>
-            {/* Loading State */}
-            {isAnalyzing && (
-              <div className="text-center py-16">
-                <div className="flex justify-center mb-6">
-                  <Document size={64} className="text-accent animate-pulse" />
-                </div>
-                <h3 className="font-display text-2xl font-bold mb-4">
-                  Analyzing Your Article...
-                </h3>
-                <p className="text-text-secondary italic max-w-md mx-auto">
-                  {LOADING_FACTS[currentFactIndex]}
-                </p>
-              </div>
-            )}
-
-            {/* Error Display */}
-            {error && !isAnalyzing && (
-              <div className="bg-bg-surface border-l-4 border-danger p-6">
-                <p className="font-semibold text-danger mb-2">
-                  Analysis Error
-                </p>
-                <p className="text-text-secondary">{error}</p>
-                <button
-                  onClick={() => useArticleStore.getState().editArticle()}
-                  className="mt-4 text-accent hover:underline"
-                >
-                  Start Over
-                </button>
-              </div>
-            )}
-
-            {/* Two-Column Layout with Results */}
-            {result && !isAnalyzing && !error && (
-              <TwoColumnLayout
-                left={<FormattedArticle />}
-                right={<BiasAnalysisPanel />}
-              />
-            )}
-          </>
+        {/* Article grid */}
+        {!libraryLoaded ? (
+          <div className="text-center py-16">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+            <p className="text-text-secondary">Loading library...</p>
+          </div>
+        ) : libraryError ? (
+          <div className="text-center py-16">
+            <Document size={48} className="mx-auto text-text-secondary mb-4" />
+            <p className="text-text-secondary">Failed to load library</p>
+            <p className="text-sm text-text-secondary mt-2">{libraryError}</p>
+          </div>
+        ) : sortedArticles.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedArticles.map((article) => (
+              <LibraryArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <Document size={48} className="mx-auto text-text-secondary mb-4" />
+            <p className="text-text-secondary mb-2">No articles in the library yet</p>
+            <p className="text-sm text-text-secondary">
+              Analyze articles and save them to build your collection
+            </p>
+          </div>
         )}
       </main>
-
-      {/* Signal Phrase Detail Modal */}
-      <SignalPhraseModal />
-    </div>
+    </>
   );
 }

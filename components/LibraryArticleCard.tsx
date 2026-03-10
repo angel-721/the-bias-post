@@ -7,14 +7,8 @@ import { Document, ArrowUpRight } from "@carbon/icons-react";
 export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
-  // Determine bias level badge color
-  const getBiasBadgeColor = (likelyPercent: number) => {
-    if (likelyPercent >= 85) return "bg-red-500/20 text-red-400 border-red-500/50";
-    if (likelyPercent >= 60) return "bg-amber-500/20 text-amber-400 border-amber-500/50";
-    return "bg-emerald-500/20 text-emerald-400 border-emerald-500/50";
-  };
-
-  const biasBadgeColor = getBiasBadgeColor(article.likelihood);
+  // Check if this is a low bias article (< 30%)
+  const isLowBias = article.likelihood < 30;
 
   // Format date
   const formatDate = (dateString: string) => {
@@ -29,7 +23,7 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
   return (
     <div className="bg-bg-surface border border-border-color rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
       {/* Article Image or Fallback */}
-      <div className="relative h-48 bg-bg-primary">
+      <div className="h-48 bg-bg-primary">
         {article.image_url ? (
           <img
             src={article.image_url}
@@ -41,11 +35,6 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
             <Document size={48} className="text-text-secondary opacity-30" />
           </div>
         )}
-
-        {/* Bias Badge */}
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold border ${biasBadgeColor}`}>
-          {Math.round(article.likelihood)}% Biased
-        </div>
       </div>
 
       {/* Article Content */}
@@ -68,12 +57,17 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
           <p className="text-xs text-text-secondary italic">By {article.author}</p>
         )}
 
-        {/* AI Summary */}
+        {/* AI Summary - Show for all articles that have one */}
         {article.ai_summary && (
           <div className="pt-2 border-t border-border-color">
-            <p className="text-xs text-text-secondary uppercase tracking-widest mb-2">
-              ✦ AI Summary
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-text-secondary uppercase tracking-widest">
+                {isLowBias ? 'Analysis' : 'AI Summary'}
+              </p>
+              <p className="text-xs text-text-secondary font-normal">
+                Bias score: {Math.round(article.likelihood)}%
+              </p>
+            </div>
             <p className="text-sm text-text-primary leading-relaxed font-serif">
               {summaryExpanded
                 ? article.ai_summary
@@ -91,8 +85,8 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
           </div>
         )}
 
-        {/* Top Signal Phrases */}
-        {article.signal_phrases && article.signal_phrases.length > 0 && (
+        {/* Top Signal Phrases - Only show for articles with bias likelihood >= 30% */}
+        {!isLowBias && article.signal_phrases && article.signal_phrases.length > 0 && (
           <div className="pt-2 border-t border-border-color">
             <p className="text-xs text-text-secondary uppercase tracking-widest mb-2">
               Top Indicators

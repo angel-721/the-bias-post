@@ -104,8 +104,8 @@ export function FormattedArticle() {
   };
 
   // Build segments from article body with highlighted phrases
-  const buildSegments = (text: string, matches: typeof matchedPhrases) => {
-    if (!matches.length) {
+  const buildSegments = (text: string, matches: typeof matchedPhrases, showHighlights: boolean) => {
+    if (!matches.length || !showHighlights) {
       return [{ type: 'text' as const, content: text }];
     }
 
@@ -167,7 +167,12 @@ export function FormattedArticle() {
   };
 
   // Build segments once for the entire article
-  const segments = buildSegments(body, matchedPhrases);
+  // Only show highlights for high bias articles (>= 30%)
+  const biasLikelihood = result?.confidence?.Likely
+    ? Math.round(result.confidence.Likely * 100)
+    : 0;
+  const showHighlights = biasLikelihood >= 30;
+  const segments = buildSegments(body, matchedPhrases, showHighlights);
 
   return (
     <div className="space-y-8">
@@ -183,7 +188,7 @@ export function FormattedArticle() {
               <button
                 onClick={() => {
                   setShowDuplicateWarning(false);
-                  router.push("/feed");
+                  router.push("/");
                 }}
                 className="flex-1 px-4 py-2 bg-bg-surface border border-border-color text-text-primary hover:bg-bg-primary transition-colors text-sm font-semibold"
               >

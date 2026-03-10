@@ -15,9 +15,9 @@ export function NavBar() {
   };
 
   const navLinks = [
-    { href: "/feed", label: "Library" },
-    { href: "/", label: "Analyze" },
-    { href: "/lens", label: "Lens" },
+    { href: "/", label: "Feed" },
+    { href: "/analyze", label: "Analyze" },
+    { href: "/blog", label: "Blog" },
   ];
 
   return (
