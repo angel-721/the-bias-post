@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border-color mt-16">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm text-text-secondary">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm text-text-secondary hidden md:grid">
           {/* Dataset */}
           <div className="flex items-start gap-3">
             <span className="text-lg">🤗</span>
@@ -76,8 +76,13 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-8 pt-6 border-t border-border-color text-center text-xs text-text-secondary">
+        {/* Mobile copyright - always visible */}
+        <div className="md:hidden text-center text-xs text-text-secondary">
+          © The Bias Post
+        </div>
+
+        {/* Desktop copyright */}
+        <div className="hidden md:block mt-8 pt-6 border-t border-border-color text-center text-xs text-text-secondary">
           © The Bias Post
         </div>
       </div>

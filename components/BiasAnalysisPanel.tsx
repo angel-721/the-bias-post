@@ -124,7 +124,7 @@ export function BiasAnalysisPanel() {
       </div>
 
       {aiSummary && !lastSavedArticleId && (
-        <div className="analysis-section">
+        <div className="analysis-section hidden md:block">
           <button
             onClick={saveToLibrary}
             disabled={isSaving}
@@ -146,7 +146,7 @@ export function BiasAnalysisPanel() {
       )}
 
       {!isLowBias && result.signal_phrases && result.signal_phrases.length > 0 && (
-        <div className="analysis-section">
+        <div className="analysis-section hidden md:block">
           <button
             onClick={() => setSignalPhrasesOpen(!signalPhrasesOpen)}
             className="flex items-center justify-between w-full mb-4"
@@ -200,7 +200,7 @@ export function BiasAnalysisPanel() {
       {step === 'results' && result && (
         <button
           onClick={handleExport}
-          className="w-full px-6 py-3 bg-bg-surface border border-border-color text-text-primary hover:bg-bg-surface/80 font-semibold tracking-wide transition-colors text-sm"
+          className="w-full px-6 py-3 bg-bg-surface border border-border-color text-text-primary hover:bg-bg-surface/80 font-semibold tracking-wide transition-colors text-sm hidden md:block"
         >
           Export JSON
         </button>

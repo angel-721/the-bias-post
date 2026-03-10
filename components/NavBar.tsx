@@ -29,7 +29,8 @@ export function NavBar() {
             href="/"
             className="font-display text-2xl font-black tracking-tight hover:opacity-80 transition-opacity"
           >
-            THE BIAS POST
+            <span className="hidden md:inline">THE BIAS POST</span>
+            <span className="md:hidden font-mono text-xl">BP</span>
           </Link>
 
           <div className="flex items-center gap-8">
