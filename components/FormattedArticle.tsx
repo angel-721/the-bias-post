@@ -26,25 +26,18 @@ export function FormattedArticle() {
     isDuplicate,
   } = useArticleStore();
 
-  const [highlightedPhraseId, setHighlightedPhraseId] = useState<number | null>(null);
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
-  const [duplicateArticle, setDuplicateArticle] = useState<any>(null);
   const router = useRouter();
 
-  // Analyze article function
   const handleAnalyze = async () => {
-    // Check for duplicate first
     await checkDuplicate();
 
-    // Wait a bit for the state to update
     setTimeout(async () => {
       if (isDuplicate) {
-        // Show warning modal
         setShowDuplicateWarning(true);
         return;
       }
 
-      // Proceed with analysis
       performAnalysis();
     }, 100);
   };
@@ -66,21 +59,11 @@ export function FormattedArticle() {
       }
 
       const data = await response.json();
-      console.log("API Response:", data);
 
       setResult(data);
 
-      // Match signal phrases for annotation
       if (data.signal_phrases && data.signal_phrases.length > 0) {
-        console.log("=== SIGNAL PHRASE MATCHING DEBUG ===");
-        console.log("Signal phrases from API:", data.signal_phrases);
-        console.log("Article text length:", body.length);
-
         const matches = matchSignalPhrases(body, data.signal_phrases);
-        console.log("Matched phrases:", matches);
-        console.log("Found matches:", matches.filter((m) => m.found).length);
-        console.log("=== END DEBUG ===");
-
         setMatchedPhrases(matches);
       }
     } catch (err) {
@@ -91,25 +74,11 @@ export function FormattedArticle() {
     }
   };
 
-  // Scroll to highlighted phrase and pulse it
-  const scrollToPhrase = (index: number) => {
-    setHighlightedPhraseId(index);
-    setTimeout(() => {
-      const element = document.querySelector(`mark[data-index="${index}"]`);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-        setTimeout(() => setHighlightedPhraseId(null), 2000);
-      }
-    }, 100);
-  };
-
-  // Build segments from article body with highlighted phrases
   const buildSegments = (text: string, matches: typeof matchedPhrases, showHighlights: boolean) => {
     if (!matches.length || !showHighlights) {
       return [{ type: 'text' as const, content: text }];
     }
 
-    // Filter only found matches and sort by position
     const foundMatches = matches
       .filter((m) => m.found)
       .sort((a, b) => a.start - b.start);
@@ -130,7 +99,6 @@ export function FormattedArticle() {
     foundMatches.forEach((match) => {
       const { start, end, weight, index } = match;
 
-      // Add text before this match
       if (start > cursor) {
         segments.push({
           type: 'text',
@@ -138,7 +106,6 @@ export function FormattedArticle() {
         });
       }
 
-      // Add highlighted match
       segments.push({
         type: 'highlight',
         content: text.slice(start, end),
@@ -149,7 +116,6 @@ export function FormattedArticle() {
       cursor = end;
     });
 
-    // Add remaining text
     if (cursor < text.length) {
       segments.push({
         type: 'text',
@@ -157,17 +123,9 @@ export function FormattedArticle() {
       });
     }
 
-    console.log('Segments:', segments.map(s => ({
-      type: s.type,
-      content: s.content?.substring(0, 40),
-      phraseIndex: s.phraseIndex ?? null
-    })));
-
     return segments;
   };
 
-  // Build segments once for the entire article
-  // Only show highlights for high bias articles (>= 30%)
   const biasLikelihood = result?.confidence?.Likely
     ? Math.round(result.confidence.Likely * 100)
     : 0;
@@ -176,7 +134,6 @@ export function FormattedArticle() {
 
   return (
     <div className="space-y-8">
-      {/* Duplicate Warning Modal */}
       {showDuplicateWarning && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-bg-surface border border-border-color rounded-lg max-w-md w-full p-6 space-y-4">
@@ -208,7 +165,6 @@ export function FormattedArticle() {
         </div>
       )}
 
-      {/* Header with title and edit link */}
       <div className="flex items-center justify-between border-b border-border-color pb-4">
         <h2 className="font-display text-2xl font-bold">Article Analysis</h2>
         {step === 'formatted' && (
@@ -222,21 +178,18 @@ export function FormattedArticle() {
         )}
       </div>
 
-      {/* Optional Headline */}
       {headline && (
         <h1 className="font-display text-4xl font-black leading-tight mb-4 text-text-primary">
           {headline}
         </h1>
       )}
 
-      {/* Optional Author Byline */}
       {author && (
         <p className="text-sm text-text-secondary uppercase tracking-widest mb-6 italic">
           By {author}
         </p>
       )}
 
-      {/* Article content */}
       <article className="border-t border-border-color pt-8">
         {segments.length > 0 ? (
           <div className="prose prose-lg max-w-none">
@@ -253,10 +206,6 @@ export function FormattedArticle() {
                       isAnalyzed
                         ? "bg-blue-500/15 border-blue-500/60"
                         : "bg-amber-500/20 border-b-2 border-amber-500/50 border-l-0"
-                    } ${
-                      highlightedPhraseId === segment.phraseIndex
-                        ? "outline outline-2 " + (isAnalyzed ? "outline-blue-500" : "outline-amber-500")
-                        : ""
                     }`}
                   >
                     {segment.content}
@@ -277,7 +226,6 @@ export function FormattedArticle() {
         )}
       </article>
 
-      {/* Analyze Button (only shown when no results) */}
       {!result && (
         <button
           onClick={handleAnalyze}

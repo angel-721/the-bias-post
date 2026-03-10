@@ -23,12 +23,10 @@ export function BiasAnalysisPanel() {
   } = useArticleStore();
   const [signalPhrasesOpen, setSignalPhrasesOpen] = useState(true);
 
-  // Calculate bias likelihood
   const biasLikelihood = result?.confidence?.Likely
     ? Math.round(result.confidence.Likely * 100)
     : 0;
 
-  // Check if this is a low bias article (< 30%)
   const isLowBias = biasLikelihood < 30;
 
   const handleExport = () => {
@@ -90,19 +88,16 @@ export function BiasAnalysisPanel() {
 
   return (
     <div className="analysis-panel space-y-4">
-      {/* Verdict Section */}
       <div className="analysis-section">
         <h3 className="analysis-section-title">BIAS ANALYSIS</h3>
 
         {result.confidence && (
           <div className="space-y-4">
-            {/* Confidence Bar */}
             {result.confidence.Likely !== undefined &&
               result.confidence.Unlikely !== undefined && (
               <LikelihoodBar likelihood={biasLikelihood} />
             )}
 
-            {/* Confidence Message */}
             <p className="text-base leading-relaxed text-text-primary font-serif">
               {getConfidenceMessage(biasLikelihood)}
             </p>
@@ -110,7 +105,6 @@ export function BiasAnalysisPanel() {
         )}
       </div>
 
-      {/* AI Summary Section - Show for all articles */}
       <div className="analysis-section">
         <h3 className="analysis-section-title">{isLowBias ? 'AI ANALYSIS' : 'AI SUMMARY'}</h3>
 
@@ -129,7 +123,6 @@ export function BiasAnalysisPanel() {
         ) : null}
       </div>
 
-      {/* Save Section - Show when summary is ready */}
       {aiSummary && !lastSavedArticleId && (
         <div className="analysis-section">
           <button
@@ -143,7 +136,6 @@ export function BiasAnalysisPanel() {
         </div>
       )}
 
-      {/* Success state */}
       {lastSavedArticleId && (
         <div className="analysis-section">
           <p className="text-sm text-success mb-2">✓ Saved to library</p>
@@ -153,7 +145,6 @@ export function BiasAnalysisPanel() {
         </div>
       )}
 
-      {/* Signal Phrases Section - Only show for articles with bias likelihood >= 30% */}
       {!isLowBias && result.signal_phrases && result.signal_phrases.length > 0 && (
         <div className="analysis-section">
           <button
@@ -206,7 +197,6 @@ export function BiasAnalysisPanel() {
         </div>
       )}
 
-      {/* Export Button */}
       {step === 'results' && result && (
         <button
           onClick={handleExport}
@@ -216,7 +206,6 @@ export function BiasAnalysisPanel() {
         </button>
       )}
 
-      {/* Footnote */}
       <div className="analysis-section">
         <div className="flex gap-3">
           <span className="text-accent text-lg">⚠</span>
@@ -228,7 +217,6 @@ export function BiasAnalysisPanel() {
         </div>
       </div>
 
-      {/* Analyze Again Button */}
       <button
         onClick={reset}
         className="w-full px-6 py-3 border-2 border-accent text-accent hover:bg-accent hover:text-text-primary font-semibold tracking-wide transition-colors"

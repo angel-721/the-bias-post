@@ -26,7 +26,6 @@ export function ComparisonCard({ comparison }: ComparisonCardProps) {
 
   const truncateSummary = (text: string | null, maxLines: number = 2) => {
     if (!text) return null;
-    // Rough estimate: ~60 characters per line
     const maxChars = maxLines * 60;
     if (text.length <= maxChars) return text;
     return text.slice(0, maxChars).trim() + "...";

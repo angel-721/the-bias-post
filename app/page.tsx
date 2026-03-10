@@ -44,7 +44,6 @@ export default function FeedPage() {
   return (
     <>
       <main className="max-w-6xl mx-auto px-6 py-12">
-        {/* Section header */}
         <div className="text-center mb-8">
           <h1 className="font-display text-5xl font-black tracking-tight mb-4">
             ARTICLE LIBRARY
@@ -52,7 +51,6 @@ export default function FeedPage() {
           <div className="w-32 h-0.5 bg-accent mx-auto mb-6"></div>
         </div>
 
-        {/* Explanation copy */}
         <div className="max-w-2xl mx-auto text-center mb-6">
           <p className="text-text-secondary leading-relaxed">
             A collection of articles analyzed for potential bias using The Bias Post classifier.
@@ -60,7 +58,6 @@ export default function FeedPage() {
           </p>
         </div>
 
-        {/* Sort controls */}
         {libraryLoaded && libraryArticles.length > 0 && (
           <div className="flex justify-center mb-8">
             <div className="inline-flex items-center gap-1 text-xs text-text-secondary">
@@ -101,10 +98,8 @@ export default function FeedPage() {
           </div>
         )}
 
-        {/* Thin rule */}
         <div className="border-b border-border-color mb-8"></div>
 
-        {/* Article grid */}
         {!libraryLoaded ? (
           <div className="text-center py-16">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>

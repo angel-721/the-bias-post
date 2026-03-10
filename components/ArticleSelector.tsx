@@ -23,7 +23,6 @@ export function ArticleSelector({
   const [isLoading, setIsLoading] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Debounced search
   useEffect(() => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);

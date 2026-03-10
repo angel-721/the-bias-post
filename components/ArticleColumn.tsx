@@ -16,26 +16,21 @@ export function ArticleColumn({
   label,
   showSharedHighlight = true,
 }: ArticleColumnProps) {
-  // Get top 4 signal phrases (rank 1-4)
   const topPhrases = article.signal_phrases
     .filter((sp) => sp.rank >= 1 && sp.rank <= 4)
     .sort((a, b) => a.rank - b.rank);
 
-  // Create a map of phrase text to shared phrase object for quick lookup
   const sharedPhraseMap = new Map<string, SharedPhrase>();
   for (const sp of sharedPhrases) {
-    // Use the normalized version for lookup
     const normalized = sp.phrase.toLowerCase().trim();
     sharedPhraseMap.set(normalized, sp);
   }
 
-  // Check if a phrase is shared
   const isPhraseShared = (phrase: string): boolean => {
     const normalized = phrase.toLowerCase().trim();
-    // Check for exact match or similar match
     for (const [key, value] of sharedPhraseMap.entries()) {
       if (normalized === key || areSimilarPhrases(normalized, key)) {
-        return value.inA && value.inB; // Only highlight if present in BOTH articles
+        return value.inA && value.inB;
       }
     }
     return false;
@@ -43,7 +38,6 @@ export function ArticleColumn({
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      {/* Article header */}
       <div className="mb-6 pb-6 border-b border-border-color">
         <p className="text-xs text-text-secondary uppercase tracking-widest mb-2">
           {label}

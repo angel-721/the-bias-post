@@ -4,8 +4,8 @@ import type { SharedPhrase } from "@/types";
 
 interface PhraseWithHighlightProps {
   sharedPhrase: SharedPhrase;
-  showInA?: boolean; // If true, highlight when phrase is in A
-  showInB?: boolean; // If true, highlight when phrase is in B
+  showInA?: boolean;
+  showInB?: boolean;
 }
 
 export function PhraseWithHighlight({

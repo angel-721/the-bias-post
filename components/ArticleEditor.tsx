@@ -2,7 +2,6 @@
 
 import { useArticleStore } from "@/store/useArticleStore";
 import { getWordCount } from "@/lib/matchSignalPhrases";
-import { Edit, Sun, Moon, Document } from "@carbon/icons-react";
 
 export function ArticleEditor() {
   const {
@@ -28,7 +27,6 @@ export function ArticleEditor() {
 
   return (
     <div className="space-y-6">
-      {/* Optional Headline Input */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
           Headline <span className="text-text-secondary opacity-60">(optional)</span>
@@ -42,7 +40,6 @@ export function ArticleEditor() {
         />
       </div>
 
-      {/* Optional Author Input */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
           Author <span className="text-text-secondary opacity-60">(optional)</span>
@@ -56,7 +53,6 @@ export function ArticleEditor() {
         />
       </div>
 
-      {/* Optional Source Name Input */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
           Source Name <span className="text-text-secondary opacity-60">(optional)</span>
@@ -70,7 +66,6 @@ export function ArticleEditor() {
         />
       </div>
 
-      {/* Optional Source URL Input */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
           Source URL <span className="text-text-secondary opacity-60">(optional)</span>
@@ -84,7 +79,6 @@ export function ArticleEditor() {
         />
       </div>
 
-      {/* Optional Image URL Input */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
           Image URL <span className="text-text-secondary opacity-60">(optional)</span>
@@ -98,7 +92,6 @@ export function ArticleEditor() {
         />
       </div>
 
-      {/* Article Body Textarea */}
       <div>
         <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
           Article Body <span className="text-danger">*</span>
@@ -112,7 +105,6 @@ export function ArticleEditor() {
         />
       </div>
 
-      {/* Word Counter and Validation */}
       <div className="flex items-center justify-between">
         <div>
           <p className={`text-sm ${isValidInput ? "text-success" : "text-danger"}`}>
@@ -133,7 +125,6 @@ export function ArticleEditor() {
         </button>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="bg-bg-surface border-l-4 border-danger p-4">
           <p className="text-sm text-danger font-semibold">Error</p>

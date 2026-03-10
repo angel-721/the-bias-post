@@ -23,11 +23,10 @@ export function ComparativeAnalysisPanel() {
     if (!comparisonId) {
       return;
     }
-    setLoadingFactIndex(Math.floor(Math.random() * LOADING_FACTS.length)); // Random starting fact
+    setLoadingFactIndex(Math.floor(Math.random() * LOADING_FACTS.length));
     await generateComparisonAnalysis(comparisonId);
   };
 
-  // Rotate loading facts every 3 seconds
   useEffect(() => {
     if (comparisonLoading) {
       const interval = setInterval(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 interface LikelihoodBarProps {
-  likelihood: number; // 0-100
+  likelihood: number;
 }
 
 export function LikelihoodBar({ likelihood }: LikelihoodBarProps) {

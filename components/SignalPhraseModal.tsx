@@ -9,7 +9,6 @@ export function SignalPhraseModal() {
   const { activeModal, matchedPhrases, closeModal, result, setLlmLoading, setLlmExplanation } = useArticleStore();
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
-  // Rotate through loading facts while LLM is loading
   useEffect(() => {
     if (activeModal === null) {
       setCurrentFactIndex(0);

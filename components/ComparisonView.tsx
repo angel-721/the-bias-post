@@ -18,18 +18,15 @@ export function ComparisonView({
   onBackToSelection,
   isReadOnly = false,
 }: ComparisonViewProps) {
-  // Find shared phrases between the two articles
   const sharedPhrases = findSharedPhrases(
     articleA.signal_phrases,
     articleB.signal_phrases
   );
 
-  // Count truly shared phrases (present in both)
   const trulySharedCount = sharedPhrases.filter((sp) => sp.inA && sp.inB).length;
 
   return (
     <div className="space-y-8">
-      {/* Header with back button */}
       <div className="flex items-center justify-between">
         {!isReadOnly && (
           <button
@@ -47,7 +44,6 @@ export function ComparisonView({
         )}
       </div>
 
-      {/* Side-by-side comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Article A column */}
         <div className="border border-border-color rounded-lg p-6 bg-bg-surface/20">

@@ -25,7 +25,6 @@ export function NavBar() {
     <nav className="border-b border-border-color">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Masthead */}
           <Link
             href="/"
             className="font-display text-2xl font-black tracking-tight hover:opacity-80 transition-opacity"
@@ -33,7 +32,6 @@ export function NavBar() {
             THE BIAS POST
           </Link>
 
-          {/* Nav links */}
           <div className="flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -53,7 +51,6 @@ export function NavBar() {
             ))}
           </div>
 
-          {/* Theme toggle */}
           <button
             onClick={toggleTheme}
             className="p-2 hover:bg-bg-surface transition-colors"

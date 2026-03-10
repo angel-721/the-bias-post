@@ -101,12 +101,6 @@ export function matchSignalPhrases(
   const articleWords = normalizedText.split(" ");
   const wordPositions = buildWordPositionMap(text);
 
-  console.log("=== SIGNIFICANT WORD FUZZY MATCHING DEBUG ===");
-  console.log("Article text length:", text.length);
-  console.log("Normalized text length:", normalizedText.length);
-  console.log("Article words:", articleWords.length);
-  console.log("Word positions:", wordPositions.length);
-
   const matches: SignalPhraseMatch[] = [];
   const threshold = 0.85;
   const minSignificantWords = 5;
@@ -117,13 +111,6 @@ export function matchSignalPhrases(
     const phraseWords = normalizedPhrase.split(" ");
     const significantPhraseWords = getSignificantWords(phraseWords);
 
-    console.log(`\n--- Phrase ${idx} ---`);
-    console.log(`Original: "${originalPhrase}"`);
-    console.log(`Normalized: "${normalizedPhrase}"`);
-    console.log(`Phrase words:`, phraseWords.length);
-    console.log(`Significant phrase words:`, significantPhraseWords.length);
-
-    // Skip if too few significant words
     if (significantPhraseWords.length < minSignificantWords) {
       console.log(`Skipped: Only ${significantPhraseWords.length} significant words (need ${minSignificantWords})`);
       matches.push({
@@ -140,11 +127,8 @@ export function matchSignalPhrases(
       return;
     }
 
-    // Try exact substring match first (fast path)
     const exactIndex = normalizedText.indexOf(normalizedPhrase);
     if (exactIndex !== -1) {
-      console.log(`Exact substring match found at normalized index ${exactIndex}`);
-
       const matchWordStart = normalizedText.slice(0, exactIndex).split(" ").length;
       const matchWordEnd = matchWordStart + phraseWords.length;
 
@@ -153,10 +137,7 @@ export function matchSignalPhrases(
         const end = wordPositions[matchWordEnd - 1]?.end ?? -1;
 
         if (start !== -1 && end !== -1) {
-          const matchedText = text.slice(start, end);
           const context = extractContext(text, start, end);
-          console.log(`Found exact match: "${matchedText}"`);
-          console.log(`Position: ${start}-${end}`);
 
           matches.push({
             start,
@@ -175,11 +156,8 @@ export function matchSignalPhrases(
       }
     }
 
-    // Sliding window match on significant words
-    console.log(`Trying significant word sliding window match...`);
     let bestMatch: { score: number; windowStart: number; windowEnd: number } | null = null;
 
-    // Slide window through article words
     for (let i = 0; i <= articleWords.length - phraseWords.length; i++) {
       const windowWords = articleWords.slice(i, i + phraseWords.length);
       const significantWindowWords = getSignificantWords(windowWords);
@@ -212,10 +190,7 @@ export function matchSignalPhrases(
       const end = wordPositions[bestMatch.windowEnd]?.end ?? -1;
 
       if (start !== -1 && end !== -1) {
-        const matchedText = text.slice(start, end);
         const context = extractContext(text, start, end);
-        console.log(`Found match with score ${bestMatch.score.toFixed(2)}: "${matchedText}"`);
-        console.log(`Position: ${start}-${end}`);
 
         matches.push({
           start,
@@ -233,7 +208,6 @@ export function matchSignalPhrases(
       }
     }
 
-    console.log(`No match found for phrase ${idx}`);
     matches.push({
       start: -1,
       end: -1,
@@ -269,21 +243,6 @@ export function matchSignalPhrases(
       finalMatches.push(match);
     }
   }
-
-  // Validation log
-  const validationTable = finalMatches
-    .sort((a, b) => a.index - b.index)
-    .map(m => ({
-      Index: m.index,
-      Phrase: m.phrase.slice(0, 50) + (m.phrase.length > 50 ? "..." : ""),
-      Found: m.found ? "✓" : "✗",
-      Weight: m.weight,
-      Position: m.found ? `${m.start}-${m.end}` : "N/A",
-    }));
-
-  console.log("\n=== VALIDATION TABLE ===");
-  console.table(validationTable);
-  console.log("=== END SIGNIFICANT WORD FUZZY MATCHING DEBUG ===\n");
 
   return finalMatches.sort((a, b) => a.index - b.index);
 }

@@ -7,10 +7,8 @@ import { Document, ArrowUpRight } from "@carbon/icons-react";
 export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
-  // Check if this is a low bias article (< 30%)
   const isLowBias = article.likelihood < 30;
 
-  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -22,7 +20,6 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
 
   return (
     <div className="bg-bg-surface border border-border-color rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Article Image or Fallback */}
       <div className="h-48 bg-bg-primary">
         {article.image_url ? (
           <img
@@ -37,9 +34,7 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
         )}
       </div>
 
-      {/* Article Content */}
       <div className="p-4 space-y-3">
-        {/* Source and Date */}
         <div className="flex items-center justify-between text-xs text-text-secondary">
           <span className="font-medium">
             {article.source_name || "Unknown Source"}
@@ -47,17 +42,14 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
           <span>{formatDate(article.created_at)}</span>
         </div>
 
-        {/* Headline */}
         <h3 className="font-serif text-lg font-bold text-text-primary leading-tight">
           {article.headline}
         </h3>
 
-        {/* Author */}
         {article.author && (
           <p className="text-xs text-text-secondary italic">By {article.author}</p>
         )}
 
-        {/* AI Summary - Show for all articles that have one */}
         {article.ai_summary && (
           <div className="pt-2 border-t border-border-color">
             <div className="flex items-center justify-between mb-2">
@@ -85,7 +77,6 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
           </div>
         )}
 
-        {/* Top Signal Phrases - Only show for articles with bias likelihood >= 30% */}
         {!isLowBias && article.signal_phrases && article.signal_phrases.length > 0 && (
           <div className="pt-2 border-t border-border-color">
             <p className="text-xs text-text-secondary uppercase tracking-widest mb-2">
@@ -104,7 +95,6 @@ export function LibraryArticleCard({ article }: { article: LibraryArticle }) {
           </div>
         )}
 
-        {/* View Original Link */}
         {article.source_url && (
           <a
             href={article.source_url}
