@@ -9,15 +9,15 @@ export async function POST(request: NextRequest) {
     if (!text || typeof text !== "string") {
       return NextResponse.json(
         { error: "Text is required and must be a string" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const huggingFaceUrl = process.env.HUGGING_FACE_URL;
+    const huggingFaceUrl = process.env.NEXT_HUGGING_FACE_URL;
     if (!huggingFaceUrl) {
       return NextResponse.json(
         { error: "HuggingFace URL not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       return NextResponse.json(
         { error: "HuggingFace API request failed" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     console.error("Error in analyze API route:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

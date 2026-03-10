@@ -33,3 +33,25 @@ export type SignalPhraseMatch = {
 };
 
 export type Step = "input" | "formatted" | "results";
+
+export type LibraryArticle = {
+  id: string;
+  created_at: string;
+  headline: string;
+  author: string | null;
+  source_name: string | null;
+  source_url: string | null;
+  image_url: string | null;
+  prediction: string;
+  likelihood: number;
+  weight_std: number;
+  signal_phrases: Array<{
+    rank: number;
+    phrase: string;
+    weight: number;
+    context: string;
+    llmExplanation: string | null;
+  }>;
+  ai_summary: string | null;
+  ai_summary_generated: boolean;
+};

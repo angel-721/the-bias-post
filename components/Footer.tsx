@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border-color mt-16">
       <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="space-y-4 text-sm text-text-secondary">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm text-text-secondary">
           {/* Dataset */}
           <div className="flex items-start gap-3">
             <span className="text-lg">🤗</span>
@@ -32,6 +32,25 @@ export function Footer() {
             <div>
               <div className="font-medium text-text-primary">LLM</div>
               <div>Enhancements by GPT-5-nano</div>
+            </div>
+          </div>
+
+          {/* Library */}
+          <div className="flex items-start gap-3">
+            <span className="text-lg">⚡</span>
+            <div>
+              <div className="font-medium text-text-primary">Library</div>
+              <div>
+                <a
+                  href="https://supabase.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-text-primary transition-colors"
+                >
+                  Powered by Supabase
+                </a>
+                <div className="text-xs mt-1">supabase.com</div>
+              </div>
             </div>
           </div>
 

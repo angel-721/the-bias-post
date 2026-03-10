@@ -5,6 +5,7 @@ import { useArticleStore } from "@/store/useArticleStore";
 import { Edit } from "@carbon/icons-react";
 import { matchSignalPhrases } from "@/lib/matchSignalPhrases";
 import { SignalBadge } from "./SignalBadge";
+import { useRouter } from "next/navigation";
 
 export function FormattedArticle() {
   const {
@@ -21,12 +22,34 @@ export function FormattedArticle() {
     setMatchedPhrases,
     setError,
     openModal,
+    checkDuplicate,
+    isDuplicate,
   } = useArticleStore();
 
   const [highlightedPhraseId, setHighlightedPhraseId] = useState<number | null>(null);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [duplicateArticle, setDuplicateArticle] = useState<any>(null);
+  const router = useRouter();
 
   // Analyze article function
   const handleAnalyze = async () => {
+    // Check for duplicate first
+    await checkDuplicate();
+
+    // Wait a bit for the state to update
+    setTimeout(async () => {
+      if (isDuplicate) {
+        // Show warning modal
+        setShowDuplicateWarning(true);
+        return;
+      }
+
+      // Proceed with analysis
+      performAnalysis();
+    }, 100);
+  };
+
+  const performAnalysis = async () => {
     setAnalyzing(true);
     setError(null);
 
@@ -148,6 +171,38 @@ export function FormattedArticle() {
 
   return (
     <div className="space-y-8">
+      {/* Duplicate Warning Modal */}
+      {showDuplicateWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-bg-surface border border-border-color rounded-lg max-w-md w-full p-6 space-y-4">
+            <h3 className="text-xl font-bold text-text-primary">Duplicate Article Detected</h3>
+            <p className="text-sm text-text-secondary">
+              An article with the headline "{headline}" already exists in the library.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDuplicateWarning(false);
+                  router.push("/feed");
+                }}
+                className="flex-1 px-4 py-2 bg-bg-surface border border-border-color text-text-primary hover:bg-bg-primary transition-colors text-sm font-semibold"
+              >
+                View in Library
+              </button>
+              <button
+                onClick={() => {
+                  setShowDuplicateWarning(false);
+                  performAnalysis();
+                }}
+                className="flex-1 px-4 py-2 bg-accent hover:bg-accent-hover text-text-primary transition-colors text-sm font-semibold"
+              >
+                Analyze Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header with title and edit link */}
       <div className="flex items-center justify-between border-b border-border-color pb-4">
         <h2 className="font-display text-2xl font-bold">Article Analysis</h2>

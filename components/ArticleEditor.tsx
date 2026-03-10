@@ -9,6 +9,9 @@ export function ArticleEditor() {
     headline,
     author,
     body,
+    sourceName,
+    sourceUrl,
+    imageUrl,
     error,
     setField,
     saveArticle,
@@ -50,6 +53,48 @@ export function ArticleEditor() {
           onChange={(e) => handleInputChange("author", e.target.value)}
           placeholder="By Author Name"
           className="w-full p-3 bg-bg-surface border border-border-color text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent resize-none text-base font-serif italic"
+        />
+      </div>
+
+      {/* Optional Source Name Input */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
+          Source Name <span className="text-text-secondary opacity-60">(optional)</span>
+        </label>
+        <input
+          type="text"
+          value={sourceName}
+          onChange={(e) => setField("sourceName", e.target.value)}
+          placeholder="e.g., The New York Times"
+          className="w-full p-3 bg-bg-surface border border-border-color text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent text-sm"
+        />
+      </div>
+
+      {/* Optional Source URL Input */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
+          Source URL <span className="text-text-secondary opacity-60">(optional)</span>
+        </label>
+        <input
+          type="url"
+          value={sourceUrl}
+          onChange={(e) => setField("sourceUrl", e.target.value)}
+          placeholder="https://example.com/article"
+          className="w-full p-3 bg-bg-surface border border-border-color text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent text-sm"
+        />
+      </div>
+
+      {/* Optional Image URL Input */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest text-text-secondary mb-3">
+          Image URL <span className="text-text-secondary opacity-60">(optional)</span>
+        </label>
+        <input
+          type="url"
+          value={imageUrl}
+          onChange={(e) => setField("imageUrl", e.target.value)}
+          placeholder="https://example.com/image.jpg"
+          className="w-full p-3 bg-bg-surface border border-border-color text-text-primary placeholder:text-text-secondary focus:outline-none focus:border-accent text-sm"
         />
       </div>
 

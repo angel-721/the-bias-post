@@ -65,6 +65,21 @@ button, textarea, a {
   transition-property: color, background-color, border-color;
 }
 
+/* Line Clamp Utilities */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
 /* Two-Column Layout */
 .two-column-layout {
   display: grid;

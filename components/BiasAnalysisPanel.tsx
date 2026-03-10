@@ -3,15 +3,28 @@
 import { useState } from "react";
 import { useArticleStore } from "@/store/useArticleStore";
 import { getConfidenceMessage } from "@/lib/matchSignalPhrases";
-import type { Step } from "@/types";
+import Link from "next/link";
 
 export function BiasAnalysisPanel() {
-  const { result, matchedPhrases, step, openModal, reset } = useArticleStore();
+  const {
+    result,
+    matchedPhrases,
+    step,
+    openModal,
+    reset,
+    aiSummary,
+    isSummarizing,
+    summaryError,
+    isSaving,
+    saveError,
+    lastSavedArticleId,
+    saveToLibrary,
+  } = useArticleStore();
   const [signalPhrasesOpen, setSignalPhrasesOpen] = useState(true);
 
   const handleExport = () => {
     const store = useArticleStore.getState();
-    const { headline, author, body, result, matchedPhrases } = store;
+    const { headline, author, body, result, matchedPhrases, aiSummary } = store;
 
     if (!result) return;
 
@@ -26,6 +39,7 @@ export function BiasAnalysisPanel() {
         prediction: result.prediction,
         confidence: result.confidence,
         weight_std: result.weight_std,
+        aiBiasSummary: aiSummary || null,
         signal_phrases: matchedPhrases.map((match) => {
           const originalPhrase = result.signal_phrases[match.index];
           return {
@@ -112,6 +126,49 @@ export function BiasAnalysisPanel() {
           </div>
         )}
       </div>
+
+      {/* AI Summary Section */}
+      <div className="analysis-section">
+        <h3 className="analysis-section-title">AI SUMMARY</h3>
+
+        {isSummarizing ? (
+          <div className="text-center py-4">
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-accent"></div>
+            <p className="text-sm text-text-secondary mt-2">Generating summary...</p>
+          </div>
+        ) : aiSummary ? (
+          <div className="space-y-2">
+            <p className="text-xs text-text-secondary uppercase tracking-widest">✦ AI Generated</p>
+            <p className="text-sm leading-relaxed text-text-primary font-serif">{aiSummary}</p>
+          </div>
+        ) : summaryError ? (
+          <p className="text-sm text-danger">Summary generation failed: {summaryError}</p>
+        ) : null}
+      </div>
+
+      {/* Save Section - Only show when summary is ready */}
+      {aiSummary && !lastSavedArticleId && (
+        <div className="analysis-section">
+          <button
+            onClick={saveToLibrary}
+            disabled={isSaving}
+            className="w-full px-6 py-3 bg-accent hover:bg-accent-hover text-text-primary disabled:opacity-50 font-semibold tracking-wide transition-colors text-sm"
+          >
+            {isSaving ? "Saving..." : "Save to Library"}
+          </button>
+          {saveError && <p className="text-sm text-danger mt-2">{saveError}</p>}
+        </div>
+      )}
+
+      {/* Success state */}
+      {lastSavedArticleId && (
+        <div className="analysis-section">
+          <p className="text-sm text-success mb-2">✓ Saved to library</p>
+          <Link href="/feed" className="text-sm text-accent hover:underline">
+            View in Library →
+          </Link>
+        </div>
+      )}
 
       {/* Signal Phrases Section */}
       {result.signal_phrases && result.signal_phrases.length > 0 && (

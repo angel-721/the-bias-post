@@ -15,7 +15,7 @@ export function NavBar() {
   };
 
   const navLinks = [
-    { href: "/recent", label: "Recent" },
+    { href: "/feed", label: "Library" },
     { href: "/", label: "Analyze" },
     { href: "/lens", label: "Lens" },
   ];
