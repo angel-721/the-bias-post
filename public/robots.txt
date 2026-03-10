@@ -1,0 +1,13 @@
+# Robots.txt for The Bias Post
+# Allow all crawlers
+User-agent: *
+
+# Disallow API routes to prevent unnecessary server load
+Disallow: /api/
+
+# Disallow Next.js internal routes
+Disallow: /_next/
+Disallow: /_error/
+
+# Optional: Add a crawl delay to be friendly to the server
+Crawl-delay: 1
