@@ -1,6 +1,6 @@
 "use client";
 
-import type { LibraryArticle, SharedPhrase } from "@/types";
+import type { LibraryArticle } from "@/types";
 import { ArticleColumn } from "@/components/ArticleColumn";
 import { ComparativeAnalysisPanel } from "@/components/ComparativeAnalysisPanel";
 import { findSharedPhrases } from "@/lib/findSharedPhrases";
@@ -9,12 +9,14 @@ interface ComparisonViewProps {
   articleA: LibraryArticle;
   articleB: LibraryArticle;
   onBackToSelection: () => void;
+  isReadOnly?: boolean; // When true, disables "Change Articles" button
 }
 
 export function ComparisonView({
   articleA,
   articleB,
   onBackToSelection,
+  isReadOnly = false,
 }: ComparisonViewProps) {
   // Find shared phrases between the two articles
   const sharedPhrases = findSharedPhrases(
@@ -29,12 +31,14 @@ export function ComparisonView({
     <div className="space-y-8">
       {/* Header with back button */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={onBackToSelection}
-          className="text-sm text-accent hover:underline font-medium"
-        >
-          ← Change Articles
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={onBackToSelection}
+            className="text-sm text-accent hover:underline font-medium"
+          >
+            ← Change Articles
+          </button>
+        )}
         {trulySharedCount > 0 && (
           <div className="text-sm text-text-secondary">
             <span className="inline-block w-3 h-3 border-b-2 border-accent-hover align-middle mr-1"></span>

@@ -1,37 +1,65 @@
 "use client";
 
 import { useArticleStore } from "@/store/useArticleStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArticleSelector } from "@/components/ArticleSelector";
 import { ComparisonView } from "@/components/ComparisonView";
-import { ArrowRight } from "@carbon/icons-react";
+import { ComparisonCard } from "@/components/ComparisonCard";
+import { ArrowRight, Add } from "@carbon/icons-react";
+import { useSearchParams } from "next/navigation";
 
 export default function ComparePage() {
+  const searchParams = useSearchParams();
+  const comparisonId = searchParams.get("id");
+
   const {
-    comparisonStep,
     comparisonArticleA,
     comparisonArticleB,
     libraryArticles,
     libraryLoaded,
+    comparisonList,
+    comparisonListLoading,
+    activeComparison,
     fetchLibrary,
+    fetchComparisonList,
+    fetchComparisonById,
     clearComparison,
     setComparisonArticle,
-    setComparisonStep,
+    setActiveComparison,
+    createComparison,
   } = useArticleStore();
 
-  useEffect(() => {
-    // Clear comparison state on mount
-    clearComparison();
+  const [showNewComparison, setShowNewComparison] = useState(false);
 
+  useEffect(() => {
     // Fetch library if not loaded
     if (!libraryLoaded) {
       fetchLibrary();
     }
-  }, [libraryLoaded, fetchLibrary, clearComparison]);
 
-  const handleCompare = () => {
+    // Fetch comparison list
+    fetchComparisonList();
+  }, [libraryLoaded, fetchLibrary, fetchComparisonList]);
+
+  useEffect(() => {
+    // If comparisonId is in URL, fetch and display that comparison
+    if (comparisonId) {
+      fetchComparisonById(comparisonId);
+      setShowNewComparison(false);
+    } else {
+      setActiveComparison(null);
+      setShowNewComparison(false);
+    }
+  }, [comparisonId, fetchComparisonById, setActiveComparison]);
+
+  const handleCompare = async () => {
     if (comparisonArticleA && comparisonArticleB) {
-      setComparisonStep("comparison");
+      // Create comparison record
+      const newComparisonId = await createComparison();
+      if (newComparisonId) {
+        // Navigate to the comparison view
+        window.location.href = `/compare?id=${newComparisonId}`;
+      }
     }
   };
 
@@ -43,6 +71,37 @@ export default function ComparePage() {
   const disabledIdsForA = comparisonArticleB ? [comparisonArticleB.id] : [];
   const disabledIdsForB = comparisonArticleA ? [comparisonArticleA.id] : [];
 
+  // Active comparison view (when ?id=uuid is present)
+  if (comparisonId && activeComparison) {
+    return (
+      <div className="min-h-screen bg-bg-primary">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          {/* Header with back button */}
+          <div className="border-b border-border-color pb-8 mb-12">
+            <a
+              href="/compare"
+              className="text-sm text-accent hover:underline font-medium inline-flex items-center gap-1"
+            >
+              ← Back to Comparisons
+            </a>
+            <h1 className="font-display text-5xl font-black tracking-tight text-text-primary mt-4 mb-3">
+              Compare Articles
+            </h1>
+          </div>
+
+          {/* Comparison view */}
+          <ComparisonView
+            articleA={activeComparison.article_a}
+            articleB={activeComparison.article_b}
+            onBackToSelection={() => (window.location.href = "/compare")}
+            isReadOnly={true}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // List view (default)
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -52,13 +111,29 @@ export default function ComparePage() {
             Compare Articles
           </h1>
           <p className="text-text-secondary text-lg">
-            Select two articles from your library to analyze side-by-side
+            Select two articles from your library to compare their bias
+            indicators side by side.
           </p>
         </div>
 
-        {/* Content based on state */}
-        {comparisonStep === "selection" && (
-          <div>
+        {/* New Comparison Section */}
+        {showNewComparison ? (
+          <div className="mb-12 pb-12 border-b border-border-color">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-2xl font-bold text-text-primary">
+                New Comparison
+              </h2>
+              <button
+                onClick={() => {
+                  setShowNewComparison(false);
+                  clearComparison();
+                }}
+                className="text-sm text-text-secondary hover:text-text-primary"
+              >
+                Cancel
+              </button>
+            </div>
+
             {/* Empty state */}
             {libraryLoaded && libraryArticles.length === 0 ? (
               <div className="text-center py-20">
@@ -66,7 +141,7 @@ export default function ComparePage() {
                   No articles in your library yet
                 </p>
                 <a
-                  href="/analyze"
+                  href="/"
                   className="inline-block px-8 py-3 bg-accent text-text-primary font-medium rounded hover:bg-accent-hover transition-colors"
                 >
                   Analyze Your First Article
@@ -78,7 +153,7 @@ export default function ComparePage() {
                   You need at least 2 articles in your library to compare them
                 </p>
                 <a
-                  href="/analyze"
+                  href="/"
                   className="inline-block px-8 py-3 bg-accent text-text-primary font-medium rounded hover:bg-accent-hover transition-colors"
                 >
                   Analyze Another Article
@@ -91,13 +166,17 @@ export default function ComparePage() {
                   <ArticleSelector
                     slot="A"
                     selectedArticle={comparisonArticleA}
-                    onArticleSelect={(article) => setComparisonArticle("A", article)}
+                    onArticleSelect={(article) =>
+                      setComparisonArticle("A", article)
+                    }
                     disabledArticleIds={disabledIdsForA}
                   />
                   <ArticleSelector
                     slot="B"
                     selectedArticle={comparisonArticleB}
-                    onArticleSelect={(article) => setComparisonArticle("B", article)}
+                    onArticleSelect={(article) =>
+                      setComparisonArticle("B", article)
+                    }
                     disabledArticleIds={disabledIdsForB}
                   />
                 </div>
@@ -115,22 +194,70 @@ export default function ComparePage() {
                 </div>
 
                 {/* Hint text */}
-                {comparisonArticleA && comparisonArticleB && comparisonArticleA.id === comparisonArticleB.id && (
-                  <p className="text-center text-sm text-text-secondary mt-4">
-                    Please select two different articles to compare
-                  </p>
-                )}
+                {comparisonArticleA &&
+                  comparisonArticleB &&
+                  comparisonArticleA.id === comparisonArticleB.id && (
+                    <p className="text-center text-sm text-text-secondary mt-4">
+                      Please select two different articles to compare
+                    </p>
+                  )}
               </div>
             )}
           </div>
+        ) : (
+          <div className="mb-12 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-2xl font-bold text-text-primary">
+                Previous Comparisons
+              </h2>
+            </div>
+            <button
+              onClick={() => {
+                setShowNewComparison(true);
+                clearComparison();
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="px-6 py-3 bg-accent hover:bg-accent-hover text-text-primary font-medium rounded transition-colors inline-flex items-center gap-2"
+            >
+              <Add size={20} />
+              New Comparison
+            </button>
+          </div>
         )}
 
-        {comparisonStep === "comparison" && comparisonArticleA && comparisonArticleB && (
-          <ComparisonView
-            articleA={comparisonArticleA}
-            articleB={comparisonArticleB}
-            onBackToSelection={() => setComparisonStep("selection")}
-          />
+        {/* Comparison List */}
+        {!showNewComparison && (
+          <div>
+            {comparisonListLoading ? (
+              <div className="text-center py-20">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-4"></div>
+                <p className="text-text-secondary">Loading comparisons...</p>
+              </div>
+            ) : comparisonList.length === 0 ? (
+              <div className="text-center py-20 border border-border-color rounded-lg bg-bg-surface/20">
+                <p className="text-text-secondary text-xl mb-2">
+                  No comparisons yet
+                </p>
+                <p className="text-text-tertiary text-sm mb-6">
+                  Create your first comparison to see it here
+                </p>
+                <button
+                  onClick={() => setShowNewComparison(true)}
+                  className="px-6 py-3 border border-border-color hover:bg-bg-surface transition-colors text-text-primary font-medium inline-flex items-center gap-2"
+                >
+                  <Add size={16} />
+                  Create Comparison
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {comparisonList.map((comparison) => (
+                  <ComparisonCard key={comparison.id} comparison={comparison} />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

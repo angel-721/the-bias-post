@@ -63,3 +63,23 @@ export type SharedPhrase = {
 };
 
 export type ComparisonStep = 'selection' | 'comparison';
+
+export type ComparisonSummary = {
+  id: string;
+  created_at: string;
+  article_a: {
+    headline: string;
+    likelihood: number;
+  };
+  article_b: {
+    headline: string;
+    likelihood: number;
+  };
+  comparison_text: string | null;
+  comparison_generated: boolean;
+};
+
+export type ComparisonDetail = ComparisonSummary & {
+  article_a: LibraryArticle;
+  article_b: LibraryArticle;
+};
