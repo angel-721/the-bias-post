@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ArticleSummaryPrompt } from "@/lib/prompts/article-summary";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -28,54 +29,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let userPrompt: string;
-
-    if (is_low_bias) {
-      // Low bias prompt: explain why the article scored low
-      const phrasesText = signal_phrases
-        .map(
-          (sp, i) =>
-            `${i + 1}. "${sp.phrase}" (weight: ${sp.weight.toFixed(4)})`,
-        )
-        .join("\n");
-
-      userPrompt = `A bias classifier analyzed a news article and determined it has a LOW bias likelihood of ${likelihood}%.
-
-Article headline: ${headline || "N/A"}
-
-Article lede (first 3 sentences):
-"${article_lede || "N/A"}"
-
-Key signal phrases the classifier examined (even if not found in text):
-${phrasesText}
-
-In 2-3 sentences, explain why this article likely scored low on bias. Focus on what makes the language appear neutral (e.g., balanced sourcing, absence of loaded language, factual presentation, lack of emotional manipulation). Reference specific patterns in the lede if relevant.`;
-    } else {
-      const phrasesText = signal_phrases
-        .map(
-          (sp, i) =>
-            `${i + 1}. "${sp.phrase}" (weight: ${sp.weight.toFixed(4)})`,
-        )
-        .join("\n");
-
-      userPrompt = `A bias classifier analyzed a news article and flagged these phrases as the top indicators of bias (confidence: ${likelihood}% likely biased):
-
-${phrasesText}
-
-In 2-3 sentences, give an objective summary of what these phrases collectively suggest about the article's framing or perspective. Be specific about what viewpoint or agenda the language may favor or oppose. Do not use absolute language.`;
-    }
+    const { system, user } = ArticleSummaryPrompt({
+      signalPhrases: signal_phrases,
+      likelihood,
+      headline,
+      articleLede: article_lede,
+      isLowBias: is_low_bias,
+    });
 
     const response = await openai.chat.completions.create({
       model: "gpt-5-nano",
       messages: [
         {
           role: "system",
-          content:
-            "You are an objective media analyst. You provide neutral, balanced summaries of bias indicators in news articles. For low-bias articles, you explain what makes the writing appear neutral. For high-bias articles, you describe patterns and tendencies in biased language.",
+          content: system,
         },
         {
           role: "user",
-          content: userPrompt,
+          content: user,
         },
       ],
     });

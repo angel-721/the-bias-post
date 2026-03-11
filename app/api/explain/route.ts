@@ -1,22 +1,10 @@
 import { NextRequest } from "next/server";
+import { SignalPhraseExplanationPrompt } from "@/lib/prompts/signal-phrase-explanation";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-// Reusable system prompt for consistent, efficient output
-const SYSTEM_PROMPT = `You explain why machine learning classifiers flag phrases as politically biased.
-Focus only on wording, tone, and framing.
-Do not add outside context or political opinions.
-Be concise and objective.
-Maximum 3 sentences.`;
-
-// Trim context to max 2 paragraphs and clean whitespace
-function trimContext(context: string): string {
-  const paragraphs = context.split("\n\n").slice(0, 2);
-  return paragraphs.join("\n\n").trim().replace(/\s+/g, " ");
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,25 +14,22 @@ export async function POST(request: NextRequest) {
       return new Response("Missing required fields", { status: 400 });
     }
 
-    const trimmedContext = trimContext(context);
-
-    const prompt = `A bias classifier flagged this as one of the more biased phrases in an article. The classifier rated the full article as ${likelyPercent}% likely to be biased.
-
-Give an objective, concise explanation of why a classifier might flag this phrase as biased, and what perspective or agenda it may favor or oppose. Be specific to the language used. Keep it to 2-3 short paragraphs.
-
-Signal phrase context:
-"${trimmedContext}"`;
+    const { system, user } = SignalPhraseExplanationPrompt({
+      signalPhrase,
+      context,
+      likelyPercent,
+    });
 
     const stream = await openai.chat.completions.create({
       model: "gpt-5-nano",
       messages: [
         {
           role: "system",
-          content: SYSTEM_PROMPT,
+          content: system,
         },
         {
           role: "user",
-          content: prompt,
+          content: user,
         },
       ],
       stream: true,

@@ -1,23 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseService } from "@/lib/supabase";
+import { ComparisonPrompt } from "@/lib/prompts/article-comparison";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-const SYSTEM_PROMPT = `You are an expert media analyst comparing two news articles for bias.
-Your goal is to provide an objective, insightful comparison that helps readers understand differences in perspective, framing, and potential bias.
-
-Focus on:
-1. Differences in headline framing and language choices
-2. Contrasting perspectives or agendas each article may promote
-3. Signal phrases that indicate different biases or viewpoints
-4. How the articles might influence readers' perceptions differently
-
-Be specific and evidence-based. Quote phrases from the articles when relevant.
-Avoid taking political sides or judging which article is "better."
-Be concise but thorough - aim for 3-5 paragraphs.`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,19 +59,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate the comparison prompt
-    const prompt = buildComparisonPrompt(articleA, articleB);
-
+    const { system, user } = ComparisonPrompt(articleA, articleB);
 
     const stream = await openai.chat.completions.create({
       model: "gpt-5-nano",
       messages: [
         {
           role: "system",
-          content: SYSTEM_PROMPT,
+          content: system,
         },
         {
           role: "user",
-          content: prompt,
+          content: user,
         },
       ],
       stream: true,
@@ -104,14 +91,9 @@ export async function POST(request: NextRequest) {
               chunkCount++;
               totalChars += content.length;
               fullResponse += content;
-                `[API] Chunk ${chunkCount}: ${content.length} chars, total: ${totalChars}`,
-              );
               controller.enqueue(encoder.encode(content));
             }
           }
-
-            `[API] Stream complete: ${chunkCount} chunks, ${totalChars} total chars`,
-          );
 
           // Save to cache after generation completes
           await saveComparisonToCache(articleAId, articleBId, fullResponse);
@@ -138,45 +120,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function buildComparisonPrompt(
-  articleA: any,
-  articleB: any
-): string {
-  const getTopPhrases = (article: any) => {
-    return article.signal_phrases
-      .filter((sp: any) => sp.rank >= 1 && sp.rank <= 4)
-      .map((sp: any) => `${sp.rank}. "${sp.phrase}" (weight: ${sp.weight.toFixed(4)})`)
-      .join("\n");
-  };
-
-  return `Compare these two news articles for bias and perspective:
-
-**Article A:**
-- Headline: "${articleA.headline}"
-- Source: ${articleA.source_name || "Unknown"}
-- Bias Likelihood: ${articleA.likelihood}%
-- AI Summary: ${articleA.ai_summary || "N/A"}
-- Top Signal Phrases:
-${getTopPhrases(articleA)}
-
-**Article B:**
-- Headline: "${articleB.headline}"
-- Source: ${articleB.source_name || "Unknown"}
-- Bias Likelihood: ${articleB.likelihood}%
-- AI Summary: ${articleB.ai_summary || "N/A"}
-- Top Signal Phrases:
-${getTopPhrases(articleB)}
-
-Provide an objective comparison highlighting differences in framing, bias, and perspective between these two articles.`;
-}
-
 async function saveComparisonToCache(
   articleAId: string,
   articleBId: string,
   comparisonText: string
 ): Promise<void> {
   try {
-    // Use least/greatest to ensure consistent ordering regardless of which article was A or B
     const { error } = await supabaseService
       .from("article_comparisons")
       .insert({
@@ -184,10 +133,8 @@ async function saveComparisonToCache(
         article_b_id: articleBId,
         comparison_text: comparisonText,
       });
-
-    if (error) {
-    } else {
-    }
   } catch (error) {
+    // Silently fail - the comparison was already streamed to the user
   }
 }
+
