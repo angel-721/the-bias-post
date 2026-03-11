@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (comparisonError || !comparison) {
-      console.error('[API] Comparison fetch error:', comparisonError);
       return NextResponse.json(
         { error: 'Comparison not found' },
         { status: 404 }
@@ -47,7 +46,6 @@ export async function POST(request: NextRequest) {
 
     // Check if analysis has already been generated - hard stop if true
     if (comparison.comparison_generated) {
-      console.log('[API] Comparison already generated, returning 409');
       return NextResponse.json(
         {
           error: 'Comparison analysis has already been generated',
@@ -71,7 +69,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (errorA || errorB || !articleA || !articleB) {
-      console.error('[API] Article fetch error:', { errorA, errorB });
       return NextResponse.json(
         { error: 'Failed to fetch articles for comparison' },
         { status: 500 }
@@ -81,7 +78,6 @@ export async function POST(request: NextRequest) {
     // Generate the comparison prompt
     const prompt = buildComparisonPrompt(articleA, articleB);
 
-    console.log('[API] Generating comparison analysis...');
 
     const stream = await openai.chat.completions.create({
       model: 'gpt-5-nano',
@@ -113,19 +109,16 @@ export async function POST(request: NextRequest) {
               chunkCount++;
               totalChars += content.length;
               fullResponse += content;
-              console.log(`[API] Chunk ${chunkCount}: ${content.length} chars, total: ${totalChars}`);
               controller.enqueue(encoder.encode(content));
             }
           }
 
-          console.log(`[API] Stream complete: ${chunkCount} chunks, ${totalChars} total chars`);
 
           // Save to database after generation completes
           await saveComparisonAnalysis(comparisonId, fullResponse);
 
           controller.close();
         } catch (error) {
-          console.error('[API] Stream error:', error);
           controller.error(error);
         }
       },
@@ -139,7 +132,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('[API] Request error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -193,11 +185,8 @@ async function saveComparisonAnalysis(
       .eq('id', comparisonId);
 
     if (error) {
-      console.error('[API] Failed to save comparison analysis:', error);
     } else {
-      console.log('[API] Comparison analysis saved successfully');
     }
   } catch (error) {
-    console.error('[API] Error saving comparison analysis:', error);
   }
 }

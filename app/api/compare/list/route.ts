@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('[API] Comparison list fetch error:', error);
       return NextResponse.json(
         { error: 'Failed to fetch comparisons' },
         { status: 500 }
@@ -52,7 +51,6 @@ export async function GET(request: NextRequest) {
       offset,
     });
   } catch (error) {
-    console.error('[API] Request error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

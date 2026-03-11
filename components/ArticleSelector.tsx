@@ -46,7 +46,6 @@ export function ArticleSelector({
         const data = await response.json();
         setResults(data.articles || []);
       } catch (error) {
-        console.error("Search error:", error);
         setResults([]);
       } finally {
         setIsLoading(false);

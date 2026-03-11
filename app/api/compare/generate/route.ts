@@ -40,11 +40,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (cacheError) {
-      console.error("[API] Cache check error:", cacheError);
     }
 
     if (cachedComparison) {
-      console.log("[API] Cache hit for comparison");
       return NextResponse.json({
         comparison: cachedComparison.comparison_text,
         cached: true,
@@ -52,7 +50,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Cache miss - fetch articles and generate comparison
-    console.log("[API] Cache miss - fetching articles");
 
     const { data: articleA, error: errorA } = await supabaseService
       .from("analyzed_articles")
@@ -67,7 +64,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (errorA || errorB || !articleA || !articleB) {
-      console.error("[API] Article fetch error:", { errorA, errorB });
       return NextResponse.json(
         { error: "Failed to fetch articles" },
         { status: 500 }
@@ -77,7 +73,6 @@ export async function POST(request: NextRequest) {
     // Generate the comparison prompt
     const prompt = buildComparisonPrompt(articleA, articleB);
 
-    console.log("[API] Generating comparison with GPT-5-nano...");
 
     const stream = await openai.chat.completions.create({
       model: "gpt-5-nano",
@@ -109,14 +104,12 @@ export async function POST(request: NextRequest) {
               chunkCount++;
               totalChars += content.length;
               fullResponse += content;
-              console.log(
                 `[API] Chunk ${chunkCount}: ${content.length} chars, total: ${totalChars}`,
               );
               controller.enqueue(encoder.encode(content));
             }
           }
 
-          console.log(
             `[API] Stream complete: ${chunkCount} chunks, ${totalChars} total chars`,
           );
 
@@ -125,7 +118,6 @@ export async function POST(request: NextRequest) {
 
           controller.close();
         } catch (error) {
-          console.error("[API] Stream error:", error);
           controller.error(error);
         }
       },
@@ -139,7 +131,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[API] Request error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -195,11 +186,8 @@ async function saveComparisonToCache(
       });
 
     if (error) {
-      console.error("[API] Failed to save comparison to cache:", error);
     } else {
-      console.log("[API] Comparison saved to cache");
     }
   } catch (error) {
-    console.error("[API] Error saving comparison to cache:", error);
   }
 }

@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error || !data) {
-      console.error('[API] Comparison fetch error:', error);
       return NextResponse.json(
         { error: 'Comparison not found' },
         { status: 404 }
@@ -39,7 +38,6 @@ export async function GET(request: NextRequest) {
       comparison: data,
     });
   } catch (error) {
-    console.error('[API] Request error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

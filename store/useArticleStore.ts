@@ -1,5 +1,9 @@
-import { create } from 'zustand';
-import type { AnalysisResult, ArticleState, Step, SignalPhraseMatch, LibraryArticle, SharedPhrase, ComparisonStep, ComparisonSummary, ComparisonDetail } from '@/types';
+import { create } from "zustand";
+import type {
+  AnalysisResult,
+  Step,
+  SignalPhraseMatch,
+} from "@/types";
 
 interface ArticleStore {
   // Article metadata
@@ -12,9 +16,6 @@ interface ArticleStore {
 
   // App state machine
   step: Step;
-
-  // Theme
-  theme: 'dark' | 'light';
 
   // Analysis results
   result: AnalysisResult | null;
@@ -39,30 +40,17 @@ interface ArticleStore {
   isDuplicate: boolean | null;
   duplicateArticleId: string | null;
 
-  // Library state
-  libraryArticles: LibraryArticle[];
-  libraryLoaded: boolean;
-  libraryError: string | null;
-
-  // Comparison state
-  comparisonStep: ComparisonStep;
-  comparisonArticleA: LibraryArticle | null;
-  comparisonArticleB: LibraryArticle | null;
-  comparisonResult: string | null;
-  comparisonLoading: boolean;
-  comparisonCached: boolean;
-  comparisonError: string | null;
-
-  // Comparison list state
-  comparisonList: ComparisonSummary[];
-  comparisonListLoading: boolean;
-  comparisonListError: string | null;
-
-  // Active comparison state
-  activeComparison: ComparisonDetail | null;
-
   // Actions
-  setField: (field: keyof ArticleState | 'theme' | 'sourceName' | 'sourceUrl' | 'imageUrl', value: string) => void;
+  setField: (
+    field:
+      | "headline"
+      | "author"
+      | "body"
+      | "sourceName"
+      | "sourceUrl"
+      | "imageUrl",
+    value: string,
+  ) => void;
   setStep: (step: Step) => void;
   saveArticle: () => void;
   editArticle: () => void;
@@ -80,9 +68,6 @@ interface ArticleStore {
   setLlmLoading: (phraseIndex: number, loading: boolean) => void;
   setLlmExplanation: (phraseIndex: number, explanation: string) => void;
 
-  // Source field actions
-  setSourceField: (field: 'sourceName' | 'sourceUrl' | 'imageUrl', value: string) => void;
-
   // AI summary actions
   setAiSummary: (summary: string | null) => void;
   setSummarizing: (summarizing: boolean) => void;
@@ -97,50 +82,26 @@ interface ArticleStore {
   // Duplicate check actions
   checkDuplicate: () => Promise<void>;
   setDuplicate: (isDuplicate: boolean, articleId?: string) => void;
+}
 
-  // Library actions
-  setLibraryArticles: (articles: LibraryArticle[]) => void;
-  setLibraryLoaded: (loaded: boolean) => void;
-  setLibraryError: (error: string | null) => void;
-  fetchLibrary: () => Promise<void>;
-
-  // Comparison actions
-  setComparisonStep: (step: ComparisonStep) => void;
-  setComparisonArticle: (slot: 'A' | 'B', article: LibraryArticle | null) => void;
-  setComparisonResult: (text: string | null) => void;
-  setComparisonLoading: (loading: boolean) => void;
-  setComparisonCached: (cached: boolean) => void;
-  setComparisonError: (error: string | null) => void;
-  generateComparison: () => Promise<void>;
-  clearComparison: () => void;
-
-  // Comparison list actions
-  setComparisonList: (list: ComparisonSummary[]) => void;
-  setComparisonListLoading: (loading: boolean) => void;
-  setComparisonListError: (error: string | null) => void;
-  fetchComparisonList: () => Promise<void>;
-
-  // Active comparison actions
-  setActiveComparison: (comparison: ComparisonDetail | null) => void;
-  fetchComparisonById: (id: string) => Promise<void>;
-  createComparison: () => Promise<string | null>;
-  generateComparisonAnalysis: (comparisonId: string) => Promise<void>;
+// Helper function for word counting
+function getWordCount(text: string): number {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
 }
 
 export const useArticleStore = create<ArticleStore>((set, get) => ({
   // Article metadata
-  headline: '',
-  author: '',
-  body: '',
-  sourceName: '',
-  sourceUrl: '',
-  imageUrl: '',
+  headline: "",
+  author: "",
+  body: "",
+  sourceName: "",
+  sourceUrl: "",
+  imageUrl: "",
 
   // App state machine
-  step: 'input',
-
-  // Theme
-  theme: 'dark',
+  step: "input",
 
   // Analysis results
   result: null,
@@ -165,36 +126,9 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
   isDuplicate: null,
   duplicateArticleId: null,
 
-  // Library state
-  libraryArticles: [],
-  libraryLoaded: false,
-  libraryError: null,
-
-  // Comparison state
-  comparisonStep: 'selection',
-  comparisonArticleA: null,
-  comparisonArticleB: null,
-  comparisonResult: null,
-  comparisonLoading: false,
-  comparisonCached: false,
-  comparisonError: null,
-
-  // Comparison list state
-  comparisonList: [],
-  comparisonListLoading: false,
-  comparisonListError: null,
-
-  // Active comparison state
-  activeComparison: null,
-
   // Actions
   setField: (field, value) => {
     set({ [field]: value });
-    // Save theme to localStorage when it changes
-    if (field === 'theme') {
-      localStorage.setItem('bias-post-theme', value);
-      document.documentElement.classList.toggle('dark', value === 'dark');
-    }
   },
 
   setStep: (step) => set({ step }),
@@ -219,20 +153,20 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
       return;
     }
 
-    set({ step: 'formatted', error: null });
+    set({ step: "formatted", error: null });
   },
 
   editArticle: () => {
     set({
-      step: 'input',
+      step: "input",
       result: null,
       matchedPhrases: [],
-      error: null
+      error: null,
     });
   },
 
   setResult: (result) => {
-    set({ result, step: 'results', isAnalyzing: false });
+    set({ result, step: "results", isAnalyzing: false });
     // Auto-generate AI summary after analysis completes (for both high and low bias articles)
     setTimeout(() => {
       get().generateSummary();
@@ -251,15 +185,15 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
 
   setLlmLoading: (phraseIndex, loading) => {
     const matches = get().matchedPhrases;
-    const updated = matches.map(m =>
-      m.index === phraseIndex ? { ...m, llmLoading: loading } : m
+    const updated = matches.map((m) =>
+      m.index === phraseIndex ? { ...m, llmLoading: loading } : m,
     );
     set({ matchedPhrases: updated });
   },
 
   setLlmExplanation: (phraseIndex, explanation) => {
     const matches = get().matchedPhrases;
-    const updated = matches.map(m => {
+    const updated = matches.map((m) => {
       if (m.index === phraseIndex) {
         return {
           ...m,
@@ -273,19 +207,21 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
     set({ matchedPhrases: updated });
   },
 
-  // Source field actions
-  setSourceField: (field, value) => set({ [field]: value }),
-
   // AI summary actions
   setAiSummary: (summary) => set({ aiSummary: summary }),
   setSummarizing: (summarizing) => set({ isSummarizing: summarizing }),
   setSummaryError: (error) => set({ summaryError: error }),
+
   generateSummary: async () => {
     const state = get();
     const { result, matchedPhrases, body, headline } = state;
 
-    if (!result || !result.signal_phrases || result.signal_phrases.length === 0) {
-      set({ summaryError: 'No analysis results to summarize' });
+    if (
+      !result ||
+      !result.signal_phrases ||
+      result.signal_phrases.length === 0
+    ) {
+      set({ summaryError: "No analysis results to summarize" });
       return;
     }
 
@@ -296,26 +232,32 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
 
     try {
       // Prepare signal phrases with context
-      const signalPhrasesWithDetails = result.signal_phrases.map((sp, index) => {
-        const match = matchedPhrases[index];
-        return {
-          phrase: sp.phrase,
-          weight: sp.weight,
-          context: match?.context || '',
-        };
-      });
+      const signalPhrasesWithDetails = result.signal_phrases.map(
+        (sp, index) => {
+          const match = matchedPhrases[index];
+          return {
+            phrase: sp.phrase,
+            weight: sp.weight,
+            context: match?.context || "",
+          };
+        },
+      );
 
       // Extract lede (first 3 sentences) for low bias articles
       const getArticleLede = (text: string): string => {
-        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        return sentences.slice(0, 3).join('. ') + (sentences.length > 3 ? '.' : '');
+        const sentences = text
+          .split(/[.!?]+/)
+          .filter((s) => s.trim().length > 0);
+        return (
+          sentences.slice(0, 3).join(". ") + (sentences.length > 3 ? "." : "")
+        );
       };
 
       const articleLede = isLowBias ? getArticleLede(body) : null;
 
-      const response = await fetch('/api/summarize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           signal_phrases: signalPhrasesWithDetails,
           likelihood,
@@ -327,13 +269,14 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Summary generation failed');
+        throw new Error(errorData.error || "Summary generation failed");
       }
 
       const data = await response.json();
       set({ aiSummary: data.summary, summaryError: null });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate summary';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to generate summary";
       set({ summaryError: errorMessage });
     } finally {
       set({ isSummarizing: false });
@@ -343,6 +286,7 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
   // Save actions
   setSaving: (saving) => set({ isSaving: saving }),
   setSaveError: (error) => set({ saveError: error }),
+
   saveToLibrary: async () => {
     const state = get();
     const {
@@ -358,12 +302,12 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
 
     // Validate AI summary exists (required for all articles now)
     if (!aiSummary) {
-      set({ saveError: 'AI summary must be generated before saving' });
+      set({ saveError: "AI summary must be generated before saving" });
       return;
     }
 
     if (!result) {
-      set({ saveError: 'No analysis results to save' });
+      set({ saveError: "No analysis results to save" });
       return;
     }
 
@@ -371,22 +315,24 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
 
     try {
       // Prepare signal phrases with context
-      const signalPhrasesWithDetails = result.signal_phrases.map((sp, index) => {
-        const match = matchedPhrases[index];
-        return {
-          rank: index + 1,
-          phrase: sp.phrase,
-          weight: sp.weight,
-          context: match?.context || '',
-          llmExplanation: match?.llmExplanation || null,
-        };
-      });
+      const signalPhrasesWithDetails = result.signal_phrases.map(
+        (sp, index) => {
+          const match = matchedPhrases[index];
+          return {
+            rank: index + 1,
+            phrase: sp.phrase,
+            weight: sp.weight,
+            context: match?.context || "",
+            llmExplanation: match?.llmExplanation || null,
+          };
+        },
+      );
 
-      const response = await fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          headline: headline.trim() || 'Untitled Article',
+          headline: headline.trim() || "Untitled Article",
           author: author?.trim() || null,
           sourceName: sourceName?.trim() || null,
           sourceUrl: sourceUrl?.trim() || null,
@@ -395,23 +341,26 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
           likelihood: Math.round((result.confidence.Likely || 0) * 100),
           weightStd: result.weight_std,
           signalPhrases: signalPhrasesWithDetails,
-          aiSummary: aiSummary ? aiSummary.trim() : null, // Allow null for low bias articles
+          aiSummary: aiSummary ? aiSummary.trim() : null,
         }),
       });
 
       if (!response.ok) {
         if (response.status === 409) {
-          set({ saveError: 'This article has already been saved to the library.' });
+          set({
+            saveError: "This article has already been saved to the library.",
+          });
           return;
         }
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Save failed');
+        throw new Error(errorData.error || "Save failed");
       }
 
       const data = await response.json();
       set({ lastSavedArticleId: data.articleId, saveError: null });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save article';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save article";
       set({ saveError: errorMessage });
     } finally {
       set({ isSaving: false });
@@ -428,10 +377,11 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
     }
 
     try {
-      const response = await fetch(`/api/check-duplicate?headline=${encodeURIComponent(headline.trim())}`);
+      const response = await fetch(
+        `/api/check-duplicate?headline=${encodeURIComponent(headline.trim())}`,
+      );
 
       if (!response.ok) {
-        console.error('Duplicate check failed');
         return;
       }
 
@@ -441,296 +391,20 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
         duplicateArticleId: data.existingArticle?.id || null,
       });
     } catch (error) {
-      console.error('Duplicate check error:', error);
     }
   },
-  setDuplicate: (isDuplicate, articleId) => set({ isDuplicate, duplicateArticleId: articleId }),
-
-  // Library actions
-  setLibraryArticles: (articles) => set({ libraryArticles: articles }),
-  setLibraryLoaded: (loaded) => set({ libraryLoaded: loaded }),
-  setLibraryError: (error) => set({ libraryError: error }),
-  fetchLibrary: async () => {
-    set({ libraryError: null });
-
-    try {
-      const response = await fetch('/api/library?limit=50&offset=0');
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch library');
-      }
-
-      const data = await response.json();
-      set({ libraryArticles: data.articles, libraryLoaded: true });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch library';
-      set({ libraryError: errorMessage });
-    }
-  },
-
-  // Comparison actions
-  setComparisonStep: (step) => set({ comparisonStep: step }),
-
-  setComparisonArticle: (slot, article) => {
-    if (slot === 'A') {
-      set({ comparisonArticleA: article });
-    } else {
-      set({ comparisonArticleB: article });
-    }
-  },
-
-  setComparisonResult: (text) => set({ comparisonResult: text }),
-  setComparisonLoading: (loading) => set({ comparisonLoading: loading }),
-  setComparisonCached: (cached) => set({ comparisonCached: cached }),
-  setComparisonError: (error) => set({ comparisonError: error }),
-
-  generateComparison: async () => {
-    const state = get();
-    const { comparisonArticleA, comparisonArticleB } = state;
-
-    if (!comparisonArticleA || !comparisonArticleB) {
-      set({ comparisonError: 'Please select two articles to compare' });
-      return;
-    }
-
-    set({ comparisonLoading: true, comparisonError: null, comparisonResult: null, comparisonCached: false });
-
-    try {
-      const response = await fetch('/api/compare/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          articleAId: comparisonArticleA.id,
-          articleBId: comparisonArticleB.id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate comparison');
-      }
-
-      const contentType = response.headers.get('content-type');
-
-      // Handle JSON response (cached comparison)
-      if (contentType && contentType.includes('application/json')) {
-        const data = await response.json();
-        set({
-          comparisonResult: data.comparison,
-          comparisonCached: data.cached || false,
-          comparisonError: null,
-        });
-      } else {
-        // Handle streaming response (new comparison)
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let result = '';
-
-        if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            result += chunk;
-            set({ comparisonResult: result }); // Update incrementally
-          }
-        }
-
-        set({
-          comparisonResult: result,
-          comparisonCached: false,
-          comparisonError: null,
-        });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate comparison';
-      set({ comparisonError: errorMessage });
-    } finally {
-      set({ comparisonLoading: false });
-    }
-  },
-
-  clearComparison: () => set({
-    comparisonStep: 'selection',
-    comparisonArticleA: null,
-    comparisonArticleB: null,
-    comparisonResult: null,
-    comparisonLoading: false,
-    comparisonCached: false,
-    comparisonError: null,
-  }),
-
-  // Comparison list actions
-  setComparisonList: (list) => set({ comparisonList: list }),
-  setComparisonListLoading: (loading) => set({ comparisonListLoading: loading }),
-  setComparisonListError: (error) => set({ comparisonListError: error }),
-  fetchComparisonList: async () => {
-    set({ comparisonListLoading: true, comparisonListError: null });
-
-    try {
-      const response = await fetch('/api/compare/list?limit=50&offset=0');
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch comparisons');
-      }
-
-      const data = await response.json();
-      set({ comparisonList: data.comparisons || [] });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch comparisons';
-      set({ comparisonListError: errorMessage });
-    } finally {
-      set({ comparisonListLoading: false });
-    }
-  },
-
-  // Active comparison actions
-  setActiveComparison: (comparison) => set({ activeComparison: comparison }),
-  fetchComparisonById: async (id) => {
-    try {
-      const response = await fetch(`/api/compare/get?id=${encodeURIComponent(id)}`);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch comparison');
-      }
-
-      const data = await response.json();
-      const comparison = data.comparison;
-
-      // Set the active comparison
-      set({ activeComparison: comparison });
-
-      // If the comparison already has generated text, set it in the store
-      if (comparison.comparison_generated && comparison.comparison_text) {
-        set({
-          comparisonResult: comparison.comparison_text,
-          comparisonCached: true,
-          comparisonError: null,
-        });
-      } else {
-        // Clear previous results if not generated yet
-        set({
-          comparisonResult: null,
-          comparisonCached: false,
-          comparisonError: null,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch comparison by ID:', error);
-      throw error;
-    }
-  },
-  createComparison: async () => {
-    const state = get();
-    const { comparisonArticleA, comparisonArticleB } = state;
-
-    if (!comparisonArticleA || !comparisonArticleB) {
-      set({ comparisonError: 'Please select two articles to compare' });
-      return null;
-    }
-
-    if (comparisonArticleA.id === comparisonArticleB.id) {
-      set({ comparisonError: 'Please select two different articles' });
-      return null;
-    }
-
-    try {
-      const response = await fetch('/api/compare/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          articleAId: comparisonArticleA.id,
-          articleBId: comparisonArticleB.id,
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 409) {
-          const data = await response.json();
-          set({ comparisonError: data.error || 'This comparison already exists' });
-          return null;
-        }
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create comparison');
-      }
-
-      const data = await response.json();
-      set({ comparisonError: null });
-      return data.comparisonId;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create comparison';
-      set({ comparisonError: errorMessage });
-      return null;
-    }
-  },
-  generateComparisonAnalysis: async (comparisonId) => {
-    set({ comparisonLoading: true, comparisonError: null, comparisonResult: null });
-
-    try {
-      const response = await fetch('/api/compare/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comparisonId }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 409) {
-          const data = await response.json();
-          // Already generated - display the existing text
-          set({
-            comparisonResult: data.comparisonText,
-            comparisonCached: true,
-            comparisonError: null,
-          });
-          return;
-        }
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate comparison');
-      }
-
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let result = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value, { stream: true });
-          result += chunk;
-          set({ comparisonResult: result });
-        }
-      }
-
-      set({
-        comparisonResult: result,
-        comparisonCached: false,
-        comparisonError: null,
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate comparison';
-      set({ comparisonError: errorMessage });
-    } finally {
-      set({ comparisonLoading: false });
-    }
-  },
+  setDuplicate: (isDuplicate, articleId) =>
+    set({ isDuplicate, duplicateArticleId: articleId }),
 
   reset: () => {
     set({
-      headline: '',
-      author: '',
-      body: '',
-      sourceName: '',
-      sourceUrl: '',
-      imageUrl: '',
-      step: 'input',
-      theme: 'dark',
+      headline: "",
+      author: "",
+      body: "",
+      sourceName: "",
+      sourceUrl: "",
+      imageUrl: "",
+      step: "input",
       result: null,
       matchedPhrases: [],
       isAnalyzing: false,
@@ -744,35 +418,6 @@ export const useArticleStore = create<ArticleStore>((set, get) => ({
       lastSavedArticleId: null,
       isDuplicate: null,
       duplicateArticleId: null,
-      libraryArticles: get().libraryArticles, // Keep library across resets
-      libraryLoaded: get().libraryLoaded,
-      libraryError: get().libraryError,
-      comparisonStep: 'selection',
-      comparisonArticleA: null,
-      comparisonArticleB: null,
-      comparisonResult: null,
-      comparisonLoading: false,
-      comparisonCached: false,
-      comparisonError: null,
-      comparisonList: get().comparisonList, // Keep comparison list across resets
-      comparisonListLoading: false,
-      comparisonListError: null,
-      activeComparison: null,
     });
   },
 }));
-
-// Initialize theme from localStorage on mount
-if (typeof window !== 'undefined') {
-  const savedTheme = localStorage.getItem('bias-post-theme') as 'dark' | 'light' | null;
-  const initialTheme = savedTheme || 'dark';
-  useArticleStore.getState().setField('theme', initialTheme);
-}
-
-// Helper function for word counting
-function getWordCount(text: string): number {
-  const trimmed = text.trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).length;
-}
-

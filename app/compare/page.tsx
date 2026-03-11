@@ -1,6 +1,7 @@
 "use client";
 
-import { useArticleStore } from "@/store/useArticleStore";
+import { useComparisonStore } from "@/store/useComparisonStore";
+import { useLibraryStore } from "@/store/useLibraryStore";
 import { useEffect, useState, Suspense } from "react";
 import { ArticleSelector } from "@/components/ArticleSelector";
 import { ComparisonView } from "@/components/ComparisonView";
@@ -15,19 +16,22 @@ function ComparePageContent() {
   const {
     comparisonArticleA,
     comparisonArticleB,
-    libraryArticles,
-    libraryLoaded,
     comparisonList,
     comparisonListLoading,
     activeComparison,
-    fetchLibrary,
     fetchComparisonList,
     fetchComparisonById,
     clearComparison,
     setComparisonArticle,
     setActiveComparison,
     createComparison,
-  } = useArticleStore();
+  } = useComparisonStore();
+
+  const {
+    libraryArticles,
+    libraryLoaded,
+    fetchLibrary,
+  } = useLibraryStore();
 
   const [showNewComparison, setShowNewComparison] = useState(false);
 

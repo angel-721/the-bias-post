@@ -13,7 +13,7 @@ import { LOADING_FACTS } from "@/lib/loadingFacts";
 
 export default function Home() {
   const step = useArticleStore((s) => s.step);
-  const { result, isAnalyzing, error } = useArticleStore();
+  const { result, isAnalyzing, error, editArticle } = useArticleStore();
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
   // Rotate through loading facts during loading
@@ -80,7 +80,7 @@ export default function Home() {
                 </p>
                 <p className="text-text-secondary">{error}</p>
                 <button
-                  onClick={() => useArticleStore.getState().editArticle()}
+                  onClick={editArticle}
                   className="mt-4 text-accent hover:underline"
                 >
                   Start Over

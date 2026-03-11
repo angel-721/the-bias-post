@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useArticleStore } from "@/store/useArticleStore";
+import { useComparisonStore } from "@/store/useComparisonStore";
 import { LOADING_FACTS } from "@/lib/loadingFacts";
 import { ArrowRight, Renew, Information } from "@carbon/icons-react";
 import { useSearchParams } from "next/navigation";
@@ -15,7 +15,7 @@ export function ComparativeAnalysisPanel() {
     comparisonLoading,
     comparisonError,
     generateComparisonAnalysis,
-  } = useArticleStore();
+  } = useComparisonStore();
 
   const [loadingFactIndex, setLoadingFactIndex] = useState(0);
 

@@ -112,7 +112,6 @@ export function matchSignalPhrases(
     const significantPhraseWords = getSignificantWords(phraseWords);
 
     if (significantPhraseWords.length < minSignificantWords) {
-      console.log(`Skipped: Only ${significantPhraseWords.length} significant words (need ${minSignificantWords})`);
       matches.push({
         start: -1,
         end: -1,

@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q') || '';
     const limit = parseInt(searchParams.get('limit') || '8');
 
-    console.log('[API] Searching articles:', { query, limit });
-
     if (!query.trim()) {
       return NextResponse.json({
         articles: [],
@@ -25,21 +23,17 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (error) {
-      console.error('[API] Supabase search error:', error);
       return NextResponse.json(
         { error: 'Failed to search articles' },
         { status: 500 }
       );
     }
 
-    console.log('[API] Search returned', data?.length || 0, 'articles');
-
     return NextResponse.json({
       articles: data || [],
       count: data?.length || 0
     });
   } catch (error) {
-    console.error('[API] Search error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

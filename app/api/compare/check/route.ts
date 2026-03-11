@@ -22,7 +22,6 @@ export async function GET(request: NextRequest) {
       .maybeSingle();
 
     if (checkError) {
-      console.error('[API] Comparison check error:', checkError);
       return NextResponse.json(
         { error: 'Failed to check for existing comparison' },
         { status: 500 }
@@ -42,7 +41,6 @@ export async function GET(request: NextRequest) {
       exists: false,
     });
   } catch (error) {
-    console.error('[API] Request error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

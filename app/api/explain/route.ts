@@ -55,7 +55,6 @@ Signal phrase context:
     const readable = new ReadableStream({
       async start(controller) {
         try {
-          console.log("[API] Starting stream from OpenAI...");
           let chunkCount = 0;
           let totalChars = 0;
 
@@ -64,19 +63,12 @@ Signal phrase context:
             if (content) {
               chunkCount++;
               totalChars += content.length;
-              console.log(
-                `[API] Chunk ${chunkCount}: ${content.length} chars, total: ${totalChars}`,
-              );
               controller.enqueue(encoder.encode(content));
             }
           }
 
-          console.log(
-            `[API] Stream complete: ${chunkCount} chunks, ${totalChars} total chars`,
-          );
           controller.close();
         } catch (error) {
-          console.error("[API] Stream error:", error);
           controller.error(error);
         }
       },
@@ -90,7 +82,6 @@ Signal phrase context:
       },
     });
   } catch (error) {
-    console.error("[API] Request error:", error);
     return new Response("Internal server error", { status: 500 });
   }
 }

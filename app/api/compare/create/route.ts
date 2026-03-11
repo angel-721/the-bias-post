@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (checkError) {
-      console.error('[API] Comparison check error:', checkError);
       return NextResponse.json(
         { error: 'Failed to check for existing comparison' },
         { status: 500 }
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
 
     // If comparison exists, return it (including comparison_text if generated)
     if (existingComparison) {
-      console.log('[API] Existing comparison found:', existingComparison.id);
       return NextResponse.json({
         comparisonId: existingComparison.id,
         comparisonText: existingComparison.comparison_text,
@@ -51,8 +49,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error('[API] Comparison creation error:', insertError);
-
       // Check if it's a constraint violation (duplicate pair or same article)
       if (insertError.code === '23505') {
         return NextResponse.json(
@@ -73,7 +69,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[API] New comparison created:', newComparison.id);
     return NextResponse.json({
       comparisonId: newComparison.id,
       comparisonText: newComparison.comparison_text,
@@ -82,7 +77,6 @@ export async function POST(request: NextRequest) {
       isNew: true,
     });
   } catch (error) {
-    console.error('[API] Request error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

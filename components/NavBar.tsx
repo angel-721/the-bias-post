@@ -1,17 +1,17 @@
 "use client";
 
-import { useArticleStore } from "@/store/useArticleStore";
+import { useThemeStore } from "@/store/useThemeStore";
 import { Sun, Moon } from "@carbon/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function NavBar() {
   const pathname = usePathname();
-  const { theme, setField } = useArticleStore();
+  const { theme, setTheme } = useThemeStore();
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
-    setField("theme", newTheme);
+    setTheme(newTheme);
   };
 
   const navLinks = [

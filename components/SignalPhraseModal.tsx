@@ -41,7 +41,6 @@ export function SignalPhraseModal() {
   const handleAnalyzeBias = async () => {
     if (match.llmLoading || match.llmAnalyzed) return;
 
-    console.log('[Modal] Starting analysis for phrase', match.index);
     setLlmLoading(match.index, true);
 
     try {
@@ -55,8 +54,6 @@ export function SignalPhraseModal() {
         }),
       });
 
-      console.log('[Modal] Response status:', res.status);
-      console.log('[Modal] Response headers:', Object.fromEntries(res.headers.entries()));
 
       if (!res.ok) {
         throw new Error(`Failed to get explanation: ${res.status}`);
@@ -71,28 +68,21 @@ export function SignalPhraseModal() {
       let accumulated = '';
       let chunkCount = 0;
 
-      console.log('[Modal] Starting to read stream...');
-
       while (true) {
         const { done, value } = await reader.read();
 
         if (done) {
-          console.log('[Modal] Stream complete, total chunks:', chunkCount);
-          console.log('[Modal] Final explanation length:', accumulated.length);
           break;
         }
 
         chunkCount++;
         const chunk = decoder.decode(value, { stream: true });
         accumulated += chunk;
-        console.log(`[Modal] Chunk ${chunkCount}: ${chunk.length} chars, accumulated: ${accumulated.length}`);
 
         setLlmExplanation(match.index, accumulated);
       }
 
-      console.log('[Modal] Analysis complete for phrase', match.index);
     } catch (error) {
-      console.error('[Modal] Error analyzing phrase:', error);
       setLlmLoading(match.index, false);
     }
   };

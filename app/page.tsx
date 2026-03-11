@@ -1,7 +1,7 @@
 "use client";
 
 import { LibraryArticleCard } from "@/components/LibraryArticleCard";
-import { useArticleStore } from "@/store/useArticleStore";
+import { useLibraryStore } from "@/store/useLibraryStore";
 import { useEffect, useState } from "react";
 import { Document } from "@carbon/icons-react";
 
@@ -13,7 +13,7 @@ export default function FeedPage() {
     libraryLoaded,
     libraryError,
     fetchLibrary,
-  } = useArticleStore();
+  } = useLibraryStore();
 
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [sortedArticles, setSortedArticles] = useState(libraryArticles);
