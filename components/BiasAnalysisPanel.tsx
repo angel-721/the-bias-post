@@ -152,7 +152,7 @@ export function BiasAnalysisPanel() {
             className="flex items-center justify-between w-full mb-4"
           >
             <h3 className="analysis-section-title mb-0">
-              TOP 4 KEY PHRASES
+              KEY PHRASES
             </h3>
             <span className="text-text-secondary">
               {signalPhrasesOpen ? "▼" : "▶"}

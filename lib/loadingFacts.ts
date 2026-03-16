@@ -7,4 +7,13 @@ export const LOADING_FACTS = [
   "Source selection bias occurs when outlets consistently quote only voices that support one view.",
   "Framing effects were first formally studied by Kahneman and Tversky in the early 1980s.",
   "Word connotation matters: 'protestors' vs 'rioters' describes the same event very differently.",
+  "Confirmation bias leads readers to trust information that aligns with their existing beliefs.",
+  "The 'overton window' describes the range of policies acceptable in mainstream discourse.",
+  "Agenda-setting theory suggests media doesn't tell us what to think, but what to think about.",
+  "Passive voice can obscure responsibility in political reporting ('mistakes were made').",
+  "Cherry-picking data is a common technique to support a predetermined narrative.",
+  "False balance occurs when outlets give equal weight to unequal evidence for 'fairness'.",
+  "Semantic slanting uses euphemisms and dysphemisms to shape perception subtly.",
+  "Studies show readers spend an average of just 15 seconds on news articles before scrolling.",
+  "The first sentence of an article (the lede) often determines how readers interpret the rest.",
 ];

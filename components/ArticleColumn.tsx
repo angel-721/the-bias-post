@@ -16,9 +16,7 @@ export function ArticleColumn({
   label,
   showSharedHighlight = true,
 }: ArticleColumnProps) {
-  const topPhrases = article.signal_phrases
-    .filter((sp) => sp.rank >= 1 && sp.rank <= 4)
-    .sort((a, b) => a.rank - b.rank);
+  const topPhrases = article.signal_phrases.sort((a, b) => a.rank - b.rank);
 
   const sharedPhraseMap = new Map<string, SharedPhrase>();
   for (const sp of sharedPhrases) {
@@ -74,11 +72,11 @@ export function ArticleColumn({
           </div>
         )}
 
-        {/* Top 4 Signal Phrases */}
+        {/* Key Phrases */}
         {topPhrases.length > 0 && (
           <div>
             <h3 className="text-sm font-semibold text-text-primary mb-4 uppercase tracking-wide">
-              Top 4 Key Phrases
+              Key Phrases
             </h3>
             <div className="space-y-3">
               {topPhrases.map((sp) => {
