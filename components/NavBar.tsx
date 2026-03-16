@@ -18,7 +18,6 @@ export function NavBar() {
     { href: "/", label: "Feed" },
     { href: "/analyze", label: "Analyze" },
     { href: "/compare", label: "Compare" },
-    { href: "/blog", label: "Blog" },
   ];
 
   return (
