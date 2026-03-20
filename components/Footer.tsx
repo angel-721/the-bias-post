@@ -1,4 +1,4 @@
-import { LogoGithub } from "@carbon/icons-react";
+import { LogoGithub, Globe } from "@carbon/icons-react";
 
 export function Footer() {
   return (
@@ -78,12 +78,36 @@ export function Footer() {
 
         {/* Mobile copyright - always visible */}
         <div className="md:hidden text-center text-xs text-text-secondary">
-          © The Bias Post
+          <div className="flex items-center justify-center gap-3">
+            <span>© The Bias Post</span>
+            <span>•</span>
+            <a
+              href="https://angelv.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-text-primary transition-colors"
+            >
+              <Globe size={14} />
+              <span>angelv.dev</span>
+            </a>
+          </div>
         </div>
 
         {/* Desktop copyright */}
         <div className="hidden md:block mt-8 pt-6 border-t border-border-color text-center text-xs text-text-secondary">
-          © The Bias Post
+          <div className="flex items-center justify-center gap-3">
+            <span>© The Bias Post</span>
+            <span>•</span>
+            <a
+              href="https://angelv.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-text-primary transition-colors"
+            >
+              <Globe size={14} />
+              <span>angelv.dev</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
