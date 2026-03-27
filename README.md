@@ -4,9 +4,16 @@ Use the app here: [bias-post.angelv.dev/](https://bias-post.angelv.dev/)!
 
 A fullstack application built with Next.js to detect bias in news articles. The model for detecting bias is a fine-tuned DistilBERT end-to-end classifier that I trained myself [here](https://github.com/angel-721/news-bias-classifier). The model can also find key phrases that may indicate bias within the article.
 
+<img width="1218" height="945" alt="home" src="https://github.com/user-attachments/assets/dfd6880a-b213-4cab-9794-83870ce6fd91" />
+
+
 This app connects to Supabase to store results. In addition to detecting bias, the application utilizes a LLM to explain the results from the model and create summaries of the bias reports of the articles.
 
+<img width="1871" height="935" alt="page" src="https://github.com/user-attachments/assets/281743ef-3497-4866-a8d8-0403d3c61c7f" />
+
 You can also create comparisons of articles that are similar to see in which ways they differ and how the bias is different for example comparing a left-leaning article to a right-leaning article on the same event.
+
+<img width="1881" height="931" alt="compare" src="https://github.com/user-attachments/assets/d4362ab3-09d4-446b-b038-21c6066737d4" />
 
 ## Next.js:
 
