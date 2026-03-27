@@ -1,6 +1,18 @@
+# The Bias Post
+
+Use the app here: [bias-post.angelv.dev/](https://bias-post.angelv.dev/)!
+
+A fullstack application built with Next.js to detect bias in news articles. The model for detecting bias is a fine-tuned DistilBERT end-to-end classifier that I trained myself [here](https://github.com/angel-721/news-bias-classifier). The model can also find key phrases that may indicate bias within the article.
+
+This app connects to Supabase to store results. In addition to detecting bias, the application utilizes a LLM to explain the results from the model and create summaries of the bias reports of the articles.
+
+You can also create comparisons of articles that are similar to see in which ways they differ and how the bias is different for example comparing a left-leaning article to a right-leaning article on the same event.
+
+## Next.js:
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+### Getting Started
 
 First, run the development server:
 
@@ -20,7 +32,7 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+### Learn More
 
 To learn more about Next.js, take a look at the following resources:
 
@@ -29,7 +41,7 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+### Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
