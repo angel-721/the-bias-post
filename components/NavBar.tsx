@@ -53,7 +53,7 @@ export function NavBar() {
 
           <button
             onClick={toggleTheme}
-            className="p-2 hover:bg-bg-surface transition-colors"
+            className="p-2 hover:bg-bg-surface transition-colors cursor-pointer"
             aria-label="Toggle theme"
           >
             {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}

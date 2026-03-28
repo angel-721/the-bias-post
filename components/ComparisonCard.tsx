@@ -34,7 +34,7 @@ export function ComparisonCard({ comparison }: ComparisonCardProps) {
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left border border-border-color rounded-lg p-6 bg-bg-surface/30 hover:bg-bg-surface/50 transition-colors group"
+      className="w-full text-left border border-border-color rounded-lg p-6 bg-bg-surface/30 hover:bg-bg-surface/50 transition-colors cursor-pointer group"
     >
       {/* Article headlines */}
       <div className="space-y-1 mb-4">
